@@ -289,7 +289,7 @@ thread_exit (void) {
 	   We will be destroyed during the call to schedule_tail(). */
 	intr_disable ();
 	do_schedule (THREAD_DYING);
-	NOT_REACHED ();
+	NOT_REACHED (); //이 위치에 도달해선 안됨
 }
 
 /* Yields the CPU.  The current thread is not put to sleep and
@@ -302,7 +302,7 @@ thread_yield (void) {
 	ASSERT (!intr_context ());
 
 	old_level = intr_disable ();
-	if (curr != idle_thread)
+	if (curr != idle_thread) //idle thread가 아닐때 현재스레드를 ready listd의 끝에 추가
 		list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
@@ -463,9 +463,9 @@ do_iret (struct intr_frame *tf) {
    complete.  In practice that means that printf()s should be
    added at the end of the function. */
 static void
-thread_launch (struct thread *th) {
-	uint64_t tf_cur = (uint64_t) &running_thread ()->tf;
-	uint64_t tf = (uint64_t) &th->tf;
+thread_launch (struct thread *th) { //새로운 스레드로의 컨텍스트 전환
+	uint64_t tf_cur = (uint64_t) &running_thread ()->tf; //현재 실행중인 스레드의 프레임
+	uint64_t tf = (uint64_t) &th->tf; // 새로전환할 스레드의 프레임(스레드 상태저장) 주소
 	ASSERT (intr_get_level () == INTR_OFF);
 
 	/* The main switching logic.
@@ -527,25 +527,25 @@ thread_launch (struct thread *th) {
  * It's not safe to call printf() in the schedule(). */
 static void
 do_schedule(int status) {
-	ASSERT (intr_get_level () == INTR_OFF);
+	ASSERT (intr_get_level () == INTR_OFF); //인터럽트가 비활성화된 상태에서 실행되어야함
 	ASSERT (thread_current()->status == THREAD_RUNNING);
-	while (!list_empty (&destruction_req)) {
-		struct thread *victim =
+	while (!list_empty (&destruction_req)) {//불필요한 스레드자원 정리
+		struct thread *victim = 
 			list_entry (list_pop_front (&destruction_req), struct thread, elem);
 		palloc_free_page(victim);
 	}
-	thread_current ()->status = status;
-	schedule ();
+	thread_current ()->status = status; //스레드 상태 변경
+	schedule (); //새로운 스케줄링 사이클 시작
 }
 
-static void
+static void // 현재  실행중인 스레드를 다음 실행할 스레드로 교체하는 로직 
 schedule (void) {
-	struct thread *curr = running_thread ();
-	struct thread *next = next_thread_to_run ();
+	struct thread *curr = running_thread (); 
+	struct thread *next = next_thread_to_run (); //scheduling dicipline : FCFS,SJF,STTC,RR
 
 	ASSERT (intr_get_level () == INTR_OFF);
 	ASSERT (curr->status != THREAD_RUNNING);
-	ASSERT (is_thread (next));
+	ASSERT (is_thread (next)); //next가 유효한 스레드 구조체를 가리키고 있는지 확인
 	/* Mark us as running. */
 	next->status = THREAD_RUNNING;
 
@@ -567,12 +567,12 @@ schedule (void) {
 		   schedule(). */
 		if (curr && curr->status == THREAD_DYING && curr != initial_thread) {
 			ASSERT (curr != next);
-			list_push_back (&destruction_req, &curr->elem);
+			list_push_back (&destruction_req, &curr->elem);//소멸 대기열에 추가
 		}
 
 		/* Before switching the thread, we first save the information
 		 * of current running. */
-		thread_launch (next);
+		thread_launch (next);//새로운 스레드로의 컨텍스트 전환
 	}
 }
 

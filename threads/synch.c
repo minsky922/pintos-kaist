@@ -57,20 +57,20 @@ sema_init (struct semaphore *sema, unsigned value) {
    interrupts disabled, but if it sleeps then the next scheduled
    thread will probably turn interrupts back on. This is
    sema_down function. */
-void
-sema_down (struct semaphore *sema) {
+void//blocking
+sema_down (struct semaphore *sema) {//P(Wait):자원요청시 실행하는 연산(자원 사용허가를 얻는 과정)
 	enum intr_level old_level;
 
 	ASSERT (sema != NULL);
 	ASSERT (!intr_context ());
 
-	old_level = intr_disable ();
+	old_level = intr_disable ();//인터럽트 비활성화
 	while (sema->value == 0) {
-		list_push_back (&sema->waiters, &thread_current ()->elem);
-		thread_block ();
+		list_push_back (&sema->waiters, &thread_current ()->elem);//대기자 목록에 추가
+		thread_block ();//스레드를 블록(대기)상태로 전환
 	}
-	sema->value--;
-	intr_set_level (old_level);
+	sema->value--;//세마포어가 사용가능하면(value가 0보다 크면), 세마포어의 값을 하나 감소시켜 자원을 하나 사용한다
+	intr_set_level (old_level);//원래의 인터럽트 레벨로 복원
 }
 
 /* Down or "P" operation on a semaphore, but only if the
@@ -78,7 +78,7 @@ sema_down (struct semaphore *sema) {
    decremented, false otherwise.
 
    This function may be called from an interrupt handler. */
-bool
+bool//non-blocking
 sema_try_down (struct semaphore *sema) {
 	enum intr_level old_level;
 	bool success;
@@ -103,16 +103,16 @@ sema_try_down (struct semaphore *sema) {
 
    This function may be called from an interrupt handler. */
 void
-sema_up (struct semaphore *sema) {
+sema_up (struct semaphore *sema) {//V(signal):자원반환시 실행하는 연산(자원사용끝났음을 알리는 연산)
 	enum intr_level old_level;
 
 	ASSERT (sema != NULL);
 
 	old_level = intr_disable ();
-	if (!list_empty (&sema->waiters))
-		thread_unblock (list_entry (list_pop_front (&sema->waiters),
-					struct thread, elem));
-	sema->value++;
+	if (!list_empty (&sema->waiters)) //세마포어의 대기자 목록이 비어있지않다면
+		thread_unblock (list_entry (list_pop_front (&sema->waiters),//list_pop_front() 함수는 대기 목록에서 첫 번째 항목을 제거
+					struct thread, elem));//unblcok해서 실행 준비상태로 전환
+	sema->value++; //세마포어가 관리하는 자원 중 하나가 다시 사용가능해짐
 	intr_set_level (old_level);
 }
 
@@ -134,7 +134,7 @@ sema_self_test (void) {
 	{
 		sema_up (&sema[0]);
 		sema_down (&sema[1]);
-	}
+	} 
 	printf ("done.\n");
 }
 

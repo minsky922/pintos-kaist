@@ -54,7 +54,7 @@ timer_calibrate (void) {
 	printf ("Calibrating timer...  ");
 
 	/* Approximate loops_per_tick as the largest power-of-two
-	   still less than one timer tick. */
+	   still less than one t imer tick. */
 	loops_per_tick = 1u << 10;
 	while (!too_many_loops (loops_per_tick << 1)) {
 		loops_per_tick <<= 1;
@@ -90,11 +90,11 @@ timer_elapsed (int64_t then) {
 /* Suspends execution for approximately TICKS timer ticks. */
 void
 timer_sleep (int64_t ticks) {
-	int64_t start = timer_ticks ();
+	int64_t start = timer_ticks ();//return the value of the current tick
 
 	ASSERT (intr_get_level () == INTR_ON);
-	while (timer_elapsed (start) < ticks)
-		thread_yield ();
+	while (timer_elapsed (start) < ticks)//timer_elapse:return the value of the current tick
+		thread_yield (); // yield the cpu and insert thread to ready_list
 }
 
 /* Suspends execution for approximately MS milliseconds. */
