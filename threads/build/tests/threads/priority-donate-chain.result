@@ -1,2 +1,18 @@
 FAIL
-Run didn't shut down properly: no "Timer: # ticks" message
+Kernel panic in run: PANIC at ../../threads/interrupt.c:361 in intr_handler(): Unexpected interrupt
+Call stack: 0x800421343b 0x80042089ec 0x8004208d9e 0x8004207b00 0x800420e0a8 0x80042167ef 0x8004216760 0x8004210987 0x800421660f 0x800421093e 0x8004206b2d 0x8004206827 0x80042067dd 0x800420613d
+Translation of call stack:
+0x000000800421343b: debug_panic (lib/kernel/debug.c:32)
+0x00000080042089ec: intr_handler (threads/interrupt.c:365)
+0x0000008004208d9e: intr_entry (threads/intr-stubs.o:?)
+0x0000008004207b00: intr_set_level (threads/interrupt.c:131 (discriminator 1))
+0x000000800420e0a8: serial_putc (devices/serial.c:123)
+0x00000080042167ef: putchar_have_lock (lib/kernel/console.c:176)
+0x0000008004216760: vprintf_helper (lib/kernel/console.c:166)
+0x0000008004210987: __vprintf (lib/stdio.c:154)
+0x000000800421660f: vprintf (lib/kernel/console.c:123)
+0x000000800421093e: printf (lib/stdio.c:80)
+0x0000008004206b2d: thread_print_stats (threads/thread.c:175)
+0x0000008004206827: print_stats (threads/init.c:360)
+0x00000080042067dd: power_off (threads/init.c:347)
+0x000000800420613d: main (threads/init.c:127)

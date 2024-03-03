@@ -222,7 +222,8 @@ thread_create (const char *name, int priority,
 
 	/* compare the priorities of the currently running thread and the newly inserted one.
 	 Yield the CPU if the newly arriving thread has higher priority*/
-
+	if (t->priority > thread_current ()->priority)
+		thread_yield ();
 	return tid;
 }
 
@@ -329,7 +330,16 @@ thread_yield (void) {
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
+	struct list_elem *e = list_begin(&sleep_list);
+	struct thread *t = list_entry(e, struct thread, elem);
+
 	thread_current ()->priority = new_priority;
+
+	//readylist의 첫번째의 우선순위가 크면 yield
+	if (t->priority > thread_current ()->priority){
+		thread_yield ();
+	}
+	
 }
 
 /* Returns the current thread's priority. */
