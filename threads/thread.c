@@ -52,6 +52,13 @@ static long long user_ticks;    /* # of timer ticks in user programs. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
 static unsigned thread_ticks;   /* # of timer ticks since last yield. */
 
+bool compare_priority (const struct list_elem *a,
+ 							  const struct list_elem *b,
+ 							  void *aux){
+	return list_entry (a, struct thread, elem)->priority > list_entry (b, struct thread, elem)->priority;
+	}
+
+
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
@@ -213,6 +220,9 @@ thread_create (const char *name, int priority,
 	/* Add to run queue. */
 	thread_unblock (t);
 
+	/* compare the priorities of the currently running thread and the newly inserted one.
+	 Yield the CPU if the newly arriving thread has higher priority*/
+
 	return tid;
 }
 
@@ -246,7 +256,8 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	//list_push_back (&ready_list, &t->elem);
+	list_insert_ordered(&ready_list, &t->elem, compare_priority, NULL);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -309,7 +320,8 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread) //idle thread가 아닐때 현재스레드를 ready listd의 끝에 추가
-		list_push_back (&ready_list, &curr->elem);
+		//list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered(&ready_list, &curr->elem, compare_priority, NULL);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -614,6 +626,7 @@ thread_sleep(int64_t ticks) {
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		list_push_back (&sleep_list, &curr->elem);
+		//list_insert_ordered(&sleep_list, &curr->elem, compare_priority, NULL);
 	do_schedule (THREAD_BLOCKED);
 	intr_set_level (old_level);
 }
