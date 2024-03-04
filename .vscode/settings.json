@@ -2,6 +2,8 @@
     "files.associations": {
         "*html": "html",
         "*.c": "c",
-        "interrupt.h": "c"
+        "interrupt.h": "c",
+        "synch.h": "c",
+        "thread.h": "c"
     }
 }

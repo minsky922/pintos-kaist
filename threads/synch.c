@@ -32,6 +32,23 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+/* One semaphore in a list. */
+struct semaphore_elem {
+	struct list_elem elem;              /* List element. */
+	struct semaphore semaphore;         /* This semaphore. */
+};
+
+bool compare_sema_priority (const struct list_elem *a,
+ const struct list_elem *b, void *aux){
+	struct semaphore_elem *sema1 = list_entry(a,struct semaphore_elem, elem);
+	struct semaphore_elem *sema2 = list_entry(b,struct semaphore_elem, elem);
+	// struct list * a1 = &(sema1->semaphore.waiters);
+	// struct list * a2 = &(sema2->semaphore.waiters);
+	return list_entry (list_begin(&(sema1->semaphore.waiters)), struct thread, elem)->priority
+	 > list_entry (list_begin(&(sema2->semaphore.waiters)), struct thread, elem)->priority;
+}
+
+
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
    manipulating it:
@@ -66,7 +83,8 @@ sema_down (struct semaphore *sema) {//P(Wait):자원요청시 실행하는 연�
 
 	old_level = intr_disable ();//인터럽트 비활성화
 	while (sema->value == 0) {
-		list_push_back (&sema->waiters, &thread_current ()->elem);//대기자 목록에 추가
+		//list_push_back (&sema->waiters, &thread_current ()->elem);//대기자 목록에 추가
+		list_insert_ordered(&sema->waiters,  &thread_current ()->elem, compare_priority, NULL);
 		thread_block ();//스레드를 블록(대기)상태로 전환
 	}
 	sema->value--;//세마포어가 사용가능하면(value가 0보다 크면), 세마포어의 값을 하나 감소시켜 자원을 하나 사용한다
@@ -105,14 +123,18 @@ sema_try_down (struct semaphore *sema) {
 void
 sema_up (struct semaphore *sema) {//V(signal):자원반환시 실행하는 연산(자원사용끝났음을 알리는 연산)
 	enum intr_level old_level;
-
+	struct thread *t = list_entry (list_begin (&sema->waiters),struct thread, elem);
 	ASSERT (sema != NULL);
 
 	old_level = intr_disable ();
-	if (!list_empty (&sema->waiters)) //세마포어의 대기자 목록이 비어있지않다면
+	if (!list_empty (&sema->waiters)){ //세마포어의 대기자 목록이 비어있지않다면
+		list_sort (&sema->waiters, compare_priority, NULL);
 		thread_unblock (list_entry (list_pop_front (&sema->waiters),//list_pop_front() 함수는 대기 목록에서 첫 번째 항목을 제거
 					struct thread, elem));//unblcok해서 실행 준비상태로 전환
+	}
 	sema->value++; //세마포어가 관리하는 자원 중 하나가 다시 사용가능해짐
+	if (t->priority > thread_current ()->priority)
+		thread_yield ();
 	intr_set_level (old_level);
 }
 
@@ -236,11 +258,7 @@ lock_held_by_current_thread (const struct lock *lock) {
 	return lock->holder == thread_current ();
 }
 
-/* One semaphore in a list. */
-struct semaphore_elem {
-	struct list_elem elem;              /* List element. */
-	struct semaphore semaphore;         /* This semaphore. */
-};
+
 
 /* Initializes condition variable COND.  A condition variable
    allows one piece of code to signal a condition and cooperating
@@ -282,7 +300,8 @@ cond_wait (struct condition *cond, struct lock *lock) {
 	ASSERT (lock_held_by_current_thread (lock));
 
 	sema_init (&waiter.semaphore, 0);
-	list_push_back (&cond->waiters, &waiter.elem);
+	//list_push_back (&cond->waiters, &waiter.elem);
+	list_insert_ordered(&cond->waiters, &waiter.elem, compare_sema_priority, NULL);
 	lock_release (lock);
 	sema_down (&waiter.semaphore);
 	lock_acquire (lock);
@@ -302,9 +321,11 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 	ASSERT (!intr_context ());
 	ASSERT (lock_held_by_current_thread (lock));
 
-	if (!list_empty (&cond->waiters))
+	if (!list_empty (&cond->waiters)){
+		list_sort(&cond->waiters,compare_sema_priority, NULL);
 		sema_up (&list_entry (list_pop_front (&cond->waiters),
 					struct semaphore_elem, elem)->semaphore);
+	}
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by

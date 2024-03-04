@@ -53,9 +53,9 @@ static long long user_ticks;    /* # of timer ticks in user programs. */
 static unsigned thread_ticks;   /* # of timer ticks since last yield. */
 
 bool compare_priority (const struct list_elem *a,
- 							  const struct list_elem *b,
- 							  void *aux){
-	return list_entry (a, struct thread, elem)->priority > list_entry (b, struct thread, elem)->priority;
+ const struct list_elem *b, void *aux){
+	return list_entry (a, struct thread, elem)->priority
+	 > list_entry (b, struct thread, elem)->priority;
 	}
 
 
@@ -335,11 +335,10 @@ thread_set_priority (int new_priority) {
 
 	thread_current ()->priority = new_priority;
 
-	//readylist의 첫번째의 우선순위가 크면 yield
+	//readylist의 첫번째 스레드의 우선순위가 크면 yield
 	if (t->priority > thread_current ()->priority){
 		thread_yield ();
 	}
-	
 }
 
 /* Returns the current thread's priority. */
