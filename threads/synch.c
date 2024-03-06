@@ -48,6 +48,12 @@ bool compare_sema_priority (const struct list_elem *a,
 	 > list_entry (list_begin(&(sema2->semaphore.waiters)), struct thread, elem)->priority;
 }
 
+bool compare_donation_priority (const struct list_elem *a,
+const struct list_elem *b, void *aux){
+	return list_entry (a, struct thread, d_elem)->priority
+	 > list_entry (b, struct thread, d_elem)->priority;
+}
+
 
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
    nonnegative integer along with two atomic operators for
@@ -123,7 +129,7 @@ sema_try_down (struct semaphore *sema) {
 void
 sema_up (struct semaphore *sema) {//V(signal):자원반환시 실행하는 연산(자원사용끝났음을 알리는 연산)
 	enum intr_level old_level;
-	struct thread *t = list_entry (list_begin (&sema->waiters),struct thread, elem);
+	//struct thread *t = list_entry (list_begin (&sema->waiters),struct thread, elem);
 	ASSERT (sema != NULL);
 
 	old_level = intr_disable ();
@@ -133,8 +139,9 @@ sema_up (struct semaphore *sema) {//V(signal):자원반환시 실행하는 연�
 					struct thread, elem));//unblcok해서 실행 준비상태로 전환
 	}
 	sema->value++; //세마포어가 관리하는 자원 중 하나가 다시 사용가능해짐
-	if (t->priority > thread_current ()->priority)
-		thread_yield ();
+	// if (t->priority > thread_current ()->priority)
+	// 	thread_yield ();
+	thread_preemption();
 	intr_set_level (old_level);
 }
 
@@ -210,8 +217,29 @@ lock_acquire (struct lock *lock) {
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
 
+	struct thread *curr = thread_current();
+	if(lock->holder){
+		curr->wait_on_lock = lock;
+		list_insert_ordered(&lock->holder->donations,&curr->d_elem,compare_donation_priority,NULL);
+		priority_donation();
+	}
+
 	sema_down (&lock->semaphore);
-	lock->holder = thread_current ();
+	curr->wait_on_lock = NULL;
+	lock->holder = curr;
+}
+
+void
+priority_donation(void){
+	struct thread *curr = thread_current();
+	int depth;
+	for (depth=0; depth<8; depth++){
+		if (!curr->wait_on_lock)
+			break;
+		struct thread *holder = curr->wait_on_lock->holder;
+		holder->priority = curr->priority;
+		curr = holder; //holder가 가르키는 thread로 curr 설정
+	}
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -244,8 +272,37 @@ lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
+	remove_with_lock(lock);
+	refresh_priority ();
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
+}
+
+void
+remove_with_lock (struct lock *lock){
+	struct list_elem *e;
+	struct thread *curr = thread_current ();
+
+	for (e = list_begin (&curr->donations); e != list_end (&curr->donations); e = list_next (e)){
+		struct thread *t = list_entry (e, struct thread, d_elem);
+		if (t->wait_on_lock == lock)
+			list_remove (&t->d_elem);
+	}
+}
+
+void
+refresh_priority (void){
+	struct thread *curr =thread_current ();
+	curr->priority = curr->original_priority;
+
+	if (!list_empty (&curr->donations)){
+		list_sort (&curr->donations, compare_donation_priority, NULL);
+
+		struct thread *front = list_entry (list_front (&curr->donations),struct thread, d_elem);
+		/*기부받은 우선순위 중 가장 높은 우선순위로 자신의 우선순위를 업데이트하는 것*/
+		if (front->priority > curr->priority)
+			curr->priority = front->priority;
+	}
 }
 
 /* Returns true if the current thread holds LOCK, false

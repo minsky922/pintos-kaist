@@ -222,8 +222,9 @@ thread_create (const char *name, int priority,
 
 	/* compare the priorities of the currently running thread and the newly inserted one.
 	 Yield the CPU if the newly arriving thread has higher priority*/
-	if (t->priority > thread_current ()->priority)
-		thread_yield ();
+	thread_preemption();
+	// if (t->priority > thread_current ()->priority)
+	// 	thread_yield ();
 	return tid;
 }
 
@@ -323,6 +324,8 @@ thread_yield (void) {
 	if (curr != idle_thread) //idle thread가 아닐때 현재스레드를 ready listd의 끝에 추가
 		//list_push_back (&ready_list, &curr->elem);
 		list_insert_ordered(&ready_list, &curr->elem, compare_priority, NULL);
+	// curr->status = THREAD_READY;
+	// schedule ();
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -330,16 +333,37 @@ thread_yield (void) {
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	struct list_elem *e = list_begin(&sleep_list);
-	struct thread *t = list_entry(e, struct thread, elem);
+	// struct list_elem *e = list_begin(&sleep_list);
+	// struct thread *t = list_entry(e, struct thread, elem);
 
-	thread_current ()->priority = new_priority;
-
-	//readylist의 첫번째 스레드의 우선순위가 크면 yield
-	if (t->priority > thread_current ()->priority){
-		thread_yield ();
+	thread_current ()->original_priority = new_priority;
+	refresh_priority ();
+	thread_preemption();
+	// //readylist의 첫번째 스레드의 우선순위가 크면 yield
+	// if (t->priority > thread_current ()->priority){
+	// 	thread_yield ();
 	}
+
+/*이전에 수정한 함수. 현재 스레드의 우선순위를 인자로 받은 new_priority로 변경해준 뒤,
+ test_max_priority()로 ready 리스트 맨 앞에서 기다리고 있던 스레드와 우선순위를 비교해
+ 만약 ready 리스트에 기다리고 있던 스레드의 우선순위가 더 높다면 현재 작업 중인 스레드가
+  CPU를 기다리고 있던 애한테 양보한다.
+*/
+// void thread_set_priority (int new_priority) {
+// 	thread_current ()->priority = new_priority;
+	
+// 	test_max_priority();
+// }
+
+void 
+thread_preemption (void)
+{
+    if (!list_empty (&ready_list) && 
+    thread_current ()->priority < 
+    list_entry (list_front (&ready_list), struct thread, elem)->priority)
+        thread_yield ();
 }
+
 
 /* Returns the current thread's priority. */
 int
@@ -436,6 +460,14 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
 	t->magic = THREAD_MAGIC;
+
+	/*Init donations list*/
+	list_init (&t->donations);
+
+	t->wait_on_lock = NULL;
+
+	t->original_priority = priority;
+
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

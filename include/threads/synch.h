@@ -41,6 +41,8 @@ void cond_broadcast (struct condition *, struct lock *);
 bool compare_sema_priority (const struct list_elem *a,
  const struct list_elem *b, void *aux);
 
+void refresh_priority (void);
+
 /* Optimization barrier.
  *
  * The compiler will not reorder operations across an
