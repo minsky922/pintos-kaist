@@ -156,6 +156,8 @@ timer_interrupt(struct intr_frame *args UNUSED) {
 	*/
 
     thread_wakeup(ticks);
+	if (timer_ticks() % TIMER_FREQ == 0)
+		load_avg = (59/60)*load_avg + (1/60)*ready_threads();
 }
 
 
