@@ -7,6 +7,7 @@
 #include "threads/io.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include "threads/fixed-point.h"
 
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -154,13 +155,20 @@ timer_interrupt(struct intr_frame *args UNUSED) {
 		move them to the ready list if necessary.
 		update the global tick.
 	*/
-
-    thread_wakeup(ticks);
-	if (timer_ticks() % TIMER_FREQ == 0)
-		load_avg = (59/60)*load_avg + (1/60)*ready_threads();
+	if (thread_mlfqs){
+		increment_recent_cpu();
+		if (timer_ticks() % 4 == 0) //4틱마다
+		 	recalculate_priority();
+		if (timer_ticks() % TIMER_FREQ == 0)//1초마다
+			{
+				load_avg = add_fp(mul_fp(div_fp(int_to_fp(59), int_to_fp(60)), load_avg), 
+				mul_fp_int(div_fp(int_to_fp(1), int_to_fp(60)), ready_threads()));
+				recalculate_recent_cpu();
+			}
+	}
+	thread_wakeup(ticks); 
 }
-
-
+	
 /* Returns true if LOOPS iterations waits for more than one timer
    tick, otherwise false. */
 static bool

@@ -106,6 +106,11 @@ struct thread {
 
 	struct list_elem d_elem;
 
+	struct list_elem all_elem;
+
+	int recent_cpu;
+	int nice;
+
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
@@ -160,5 +165,12 @@ void thread_sleep(int64_t ticks);
 
 bool compare_priority (const struct list_elem *a,
  const struct list_elem *b, void *aux);
+
+int ready_threads (void);
+void increment_recent_cpu(void);
+void calculate_recent_cpu(struct thread *curr);
+void calculate_priority(struct thread *curr);
+void recalculate_priority(void);
+void recalculate_recent_cpu(void);
 #endif /* threads/thread.h */
 
