@@ -119,14 +119,6 @@ void calculate_recent_cpu(struct thread *curr) {
     int nice_times_2 = curr->nice * 2; // nice * 2
     int priority = int_to_fp(PRI_MAX) - recent_cpu_div_4 - int_to_fp(nice_times_2);
 
-    // // 최종 우선순위는 0과 PRI_MAX 사이
-    // if (priority < int_to_fp(PRI_MIN)) {
-    //     priority = int_to_fp(PRI_MIN);
-    // } else if (priority > int_to_fp(PRI_MAX)) {
-    //     priority = int_to_fp(PRI_MAX);
-    // }
-
-    //고정소수점 값을 정수로 변환
     curr->priority = fp_to_int_nearest(priority);
  }
 
@@ -192,6 +184,7 @@ thread_init (void) {
 	init_thread (initial_thread, "main", PRI_DEFAULT);
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
+	
 	initial_thread->recent_cpu = 0;
 	list_push_back(&all_list,&initial_thread->all_elem);
 }
