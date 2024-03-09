@@ -109,6 +109,7 @@ struct thread {
 	struct list_elem all_elem;
 
 	int recent_cpu;
+
 	int nice;
 
 #ifdef USERPROG
@@ -168,6 +169,7 @@ bool compare_priority (const struct list_elem *a,
 
 int ready_threads (void);
 void increment_recent_cpu(void);
+void calculate_load_avg(void);
 void calculate_recent_cpu(struct thread *curr);
 void calculate_priority(struct thread *curr);
 void recalculate_priority(void);

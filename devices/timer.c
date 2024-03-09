@@ -96,8 +96,8 @@ timer_sleep (int64_t ticks) {
 
 	ASSERT (intr_get_level () == INTR_ON);
 	
-	// if(timer_elapsed (start) < ticks)
 		thread_sleep(timer_ticks () + ticks);
+
 	// while (timer_elapsed (start) < ticks)//timer_elapse:return the value of the current tick
 	// 	thread_yield (); // yield the cpu and insert thread to ready_list
 }
@@ -157,14 +157,13 @@ timer_interrupt(struct intr_frame *args UNUSED) {
 	*/
 	if (thread_mlfqs){
 		increment_recent_cpu();
-		if (timer_ticks() % 4 == 0) //4틱마다
-		 	recalculate_priority();
 		if (timer_ticks() % TIMER_FREQ == 0)//1초마다
 			{
-				load_avg = add_fp(mul_fp(div_fp(int_to_fp(59), int_to_fp(60)), load_avg), 
-				mul_fp_int(div_fp(int_to_fp(1), int_to_fp(60)), ready_threads()));
+				calculate_load_avg();
 				recalculate_recent_cpu();
 			}
+		if (timer_ticks() % 4 == 0) //4틱마다
+		 	recalculate_priority();
 	}
 	thread_wakeup(ticks); 
 }
