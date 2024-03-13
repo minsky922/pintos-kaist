@@ -416,12 +416,12 @@ thread_set_priority (int new_priority) {
 void 
 thread_preemption (void)
 {
-	struct list_elem *e = list_begin(&ready_list);
-	struct thread *t = list_entry(e, struct thread, elem);
-	if (t->priority > thread_current ()->priority){
+	if (!list_empty (&ready_list) && 
+    thread_current ()->priority < 
+    list_entry (list_front (&ready_list), struct thread, elem)->priority)
         thread_yield ();
 	}
-}
+
 
 
 /* Returns the current thread's priority. */
