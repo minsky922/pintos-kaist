@@ -181,8 +181,6 @@ process_exec (void *f_name) {
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
-
-
 	
 	int arg_cnt=1;
 	char *save_ptr;
@@ -201,6 +199,9 @@ process_exec (void *f_name) {
 	for(int i=0;i<arg_cnt;i++)
 	{
 		arg_list[i] = strtok_r((i==0) ? file_name : NULL," ",&save_ptr);
+		if (arg_list[i] == NULL){
+			arg_cnt--;
+		}
 		// printf("arg_list[%d] : %s\n",i,arg_list[i]);
 	}
 
@@ -210,10 +211,10 @@ process_exec (void *f_name) {
 		total_cnt+=strlen(arg_list[i])+1;
 		strlcpy(_if.rsp,arg_list[i],strlen(arg_list[i])+1);
 		arg_addr_list[i] = _if.rsp;
-		printf("arg_addr_list[%d] : %x\n",i,arg_addr_list[i]);
+		//printf("arg_addr_list[%d] : %x\n",i,arg_addr_list[i]);
 	
 	}
-	printf("total : %d\n",total_cnt);
+	//printf("total : %d\n",total_cnt);
 	if(total_cnt%8!=0){
 		_if.rsp -= 8-(total_cnt%8);
 		memset(_if.rsp,0,8-(total_cnt%8));
@@ -233,15 +234,12 @@ process_exec (void *f_name) {
 	_if.R.rdi = arg_cnt;
 	_if.R.rsi = _if.rsp+8;
 
-
-
-	
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
 	if (!success)
 		return -1;
 
-	hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
+	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
@@ -262,7 +260,8 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
-	while(1){}
+	// for (int i=0; i<1000000; i++);
+	timer_sleep(1);
 	return -1;
 }
 
@@ -274,7 +273,7 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-
+	//printf("%s: exit(%d)\n" , curr -> name , curr->status);
 	process_cleanup ();
 }
 
