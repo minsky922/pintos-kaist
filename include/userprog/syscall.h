@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 typedef int pid_t;
-
+struct lock *filesys_lock;
 void syscall_init (void);
 /* Projects 2 and later. */
 void halt (void); //NO_RETURN

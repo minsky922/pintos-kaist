@@ -261,7 +261,7 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
 	// for (int i=0; i<1000000; i++);
-	timer_sleep(1);
+	timer_sleep(10);
 	return -1;
 }
 

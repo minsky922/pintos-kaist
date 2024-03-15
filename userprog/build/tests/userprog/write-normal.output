@@ -4,7 +4,7 @@ Kernel command line: -q -f put write-normal put sample.txt run write-normal
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  58,880,000 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -16,20 +16,28 @@ Executing 'write-normal':
 (write-normal) begin
 (write-normal) create "test.txt"
 (write-normal) open "test.txt"
-"KAIST is the first and top science and technology university in Korea.
- KAIST has been the gateway to advanced science and technology,
- innovation, and entrepreneurship, and our graduates have been key
- players behind Korea’ innovations. KAIST will continue to pursue
- advances in science and technology as well as the economic development
- of Korea and beyond." --KAIST(write-normal) write() returned 10 instead of 373: FAILED
-write-normal: exit(1)
-Execution of 'write-normal' complete.
-Timer: 67 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
+0x404442
+3
+(write-normal) 3
+
+0x404442
+Interrupt 0x0d (#GP General Protection Exception) at rip=800421fad0
+ cr2=0000000000000000 error=               0
+rax 7478742e74736574 rbx 0000000000000000 rcx 0000000065706f00 rdx 0000000000000175
+rsp 000000800423fe60 rbp 000000800423feb0 rsi 0000000000604da0 rdi 7478742e74736574
+rip 000000800421fad0 r8 000000800423fe18  r9 000000800421b790 r10 0000000000000000
+r11 0000000000000202 r12 000000800421d075 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000206
+es: 001b ds: 001b cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218317 0x800421ccd8 0x80042090ef 0x800420950d 0x800421ea74 0x800421d57e 0x800421d224 0x800421cecc 0x4001fd 0x40028c 0x400d2d.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 82 ticks
+Thread: 30 idle ticks, 36 kernel ticks, 16 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 115 reads, 252 writes
+hd0:1: 143 reads, 265 writes
 hd1:0: 107 reads, 0 writes
-Console: 1400 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1869 characters output
+Key

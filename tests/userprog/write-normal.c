@@ -12,7 +12,8 @@ test_main (void)
 
   CHECK (create ("test.txt", sizeof sample - 1), "create \"test.txt\"");
   CHECK ((handle = open ("test.txt")) > 1, "open \"test.txt\"");
-
+  // printf("%d\n", handle);
+  // msg("%d\n", handle);
   byte_cnt = write (handle, sample, sizeof sample - 1);
   if (byte_cnt != sizeof sample - 1)
     fail ("write() returned %d instead of %zu", byte_cnt, sizeof sample - 1);

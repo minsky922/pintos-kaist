@@ -12,6 +12,10 @@
         "*.inc": "c",
         "tests.h": "c",
         "stdio.h": "c",
-        "vm.h": "c"
+        "vm.h": "c",
+        "string.h": "c",
+        "file.h": "c",
+        "flags.h": "c",
+        "malloc.h": "c"
     }
 }

@@ -536,7 +536,11 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	t->nice = 0;
 	t->recent_cpu=0;
- 
+	
+	t->exit_status=0;
+
+	t->next_fd = 3;
+
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

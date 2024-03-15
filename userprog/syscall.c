@@ -7,7 +7,9 @@
 #include "userprog/gdt.h"
 #include "threads/flags.h"
 #include "intrinsic.h"
+//#include "threads/synch.h"
 
+// struct lock *filesys_lock;
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
@@ -35,8 +37,30 @@ syscall_init (void) {
 	 * mode stack. Therefore, we masked the FLAG_FL. */
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
+
+	//lock_init(&filesys_lock);
 }
 
+void check_addr(char *addr){
+	if (addr == NULL || !is_user_vaddr(addr) || !pml4_get_page(thread_current()->pml4,addr)){
+		exit(-1);
+	}
+}
+
+int create_fd(struct file *f){
+	struct thread *curr = thread_current();
+
+    for (int fd = curr->next_fd; fd < 64; fd++) {
+        if (curr->fdt[fd] == NULL) {
+            curr->fdt[fd] = f; 
+            curr->next_fd = fd + 1;        
+            return fd;                    
+        }
+    }
+
+    // 사용 가능한 파일 디스크립터가 없는 경우
+    return -1;
+}
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f UNUSED) {
@@ -47,30 +71,43 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			break;
 		case SYS_EXIT:
 			exit(f->R.rdi);
+			break;
 		case SYS_FORK:
 			fork(f->R.rdi);
+			break;
 		case SYS_EXEC:
 			exec(f->R.rdi);
+			break;
 		case SYS_WAIT:
 			wait(f->R.rdi);
+			break;
 		case SYS_CREATE:
-			create(f->R.rdi, f->R.rsi);
+			f->R.rax = create(f->R.rdi, f->R.rsi);
+			break;
 		case SYS_REMOVE:
 			remove(f->R.rdi);
+			break;
 		case SYS_OPEN:
-			open(f->R.rdi);
+			f->R.rax = open(f->R.rdi);
+			break;
 		case SYS_FILESIZE:
 			filesize(f->R.rdi);
+			break;
 		case SYS_READ:
-			read(f->R.rdi, f->R.rsi, f->R.rdx);
+			f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
+			break;
 		case SYS_WRITE:
-			write(f->R.rdi, f->R.rsi, f->R.rdx);
+			f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
+			break;
 		case SYS_SEEK:
 			seek(f->R.rdi, f->R.rsi);
+			break;
 		case SYS_TELL:
 			tell(f->R.rdi);
+			break;
 		case SYS_CLOSE:
 			close(f->R.rdi);
+			break;
 	}
 	
 	//printf ("system call!\n");
@@ -103,16 +140,71 @@ int exec (const char *file){
 int wait (pid_t child_tid){
 	return process_wait(child_tid);
 }
-bool create (const char *file, unsigned initial_size){}
-bool remove (const char *file){}
-int open (const char *file){}
-int filesize (int fd){}
-int read (int fd, void *buffer, unsigned length){}
-int write (int fd, const void *buffer, unsigned length){
-	putbuf(buffer,length);
+
+bool create (const char *file, unsigned initial_size){
+	check_addr(file);
+	// printf("%d\n",strlen(file));
+	if (file==NULL || strlen(file) == 0){
+		exit(-1);
+	}
+	if (strlen(file) >= 511){
+		return 0;
+	}
+	
+	return filesys_create(file, initial_size);
 }
+bool remove (const char *file){
+	check_addr(file);
+	return filesys_remove(file);
+}
+
+/* returns fd*/
+int open (const char *file){
+	check_addr(file);
+	if (file ==NULL){
+		return -1;
+	}
+	 struct file *f= filesys_open(file);
+	 if (f == NULL){
+	   	return -1;
+	 }
+	 else{
+
+		return create_fd(file);
+	 }
+}
+
+int filesize(int fd) {
+    // struct file *f = fd;
+	// printf()
+    // if (f == NULL) {
+    //     return -1;
+    // }
+    // return file_length(f);
+}
+
+int read (int fd, void *buffer, unsigned length){
+	check_addr(fd);
+}
+
+/* STDIN:0 STDOUT:1*/
+int write (int fd, const void *buffer, unsigned size){
+	if (fd == 1){
+		putbuf(buffer,size);
+		return size;
+	}
+	else if (fd == 0){
+		return -1;
+	}
+	else{
+		return file_write(thread_current()->fdt[fd],buffer,size);
+	}
+}
+
 void seek (int fd, unsigned position){}
 unsigned tell (int fd){}
+
+/* set 0 at file descriptor entry at index fd */
 void close (int fd){}
 
 

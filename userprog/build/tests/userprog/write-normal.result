@@ -1,2 +1,15 @@
 FAIL
-run:  of Korea and beyond." --KAIST(write-normal) write() returned 10 instead of 373: FAILED
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218317 0x800421ccd8 0x80042090ef 0x800420950d 0x800421ea74 0x800421d57e 0x800421d224 0x800421cecc 0x4001fd 0x40028c 0x400d2d
+Translation of call stack:
+0x0000008004218317: debug_panic (lib/kernel/debug.c:32)
+0x000000800421ccd8: kill (userprog/exception.c:103)
+0x00000080042090ef: intr_handler (threads/interrupt.c:352)
+0x000000800420950d: intr_entry (threads/intr-stubs.o:?)
+0x000000800421ea74: file_write (filesys/file.c:98)
+0x000000800421d57e: write (userprog/syscall.c:204)
+0x000000800421d224: syscall_handler (userprog/syscall.c:100)
+0x000000800421cecc: no_sti (userprog/syscall-entry.o:?)
+0x00000000004001fd: (unknown)
+0x000000000040028c: (unknown)
+0x0000000000400d2d: (unknown)
