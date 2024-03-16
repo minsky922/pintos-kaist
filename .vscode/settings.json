@@ -16,6 +16,10 @@
         "string.h": "c",
         "file.h": "c",
         "flags.h": "c",
-        "malloc.h": "c"
+        "malloc.h": "c",
+        "filesys.h": "c",
+        "input.h": "c",
+        "main.h": "c",
+        "process.h": "c"
     }
 }

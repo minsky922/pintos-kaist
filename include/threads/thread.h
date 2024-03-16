@@ -115,7 +115,7 @@ struct thread {
 	int exit_status;
 
 
-	struct file *fdt[64];
+	struct file **fdt;
 	int next_fd;
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -179,5 +179,10 @@ void calculate_recent_cpu(struct thread *curr);
 void calculate_priority(struct thread *curr);
 void recalculate_priority(void);
 void recalculate_recent_cpu(void);
+
+
+#define FDT_PAGES 2
+#define FDT_COUNT_LIMIT 128
+
 #endif /* threads/thread.h */
 

@@ -5,8 +5,11 @@
 #include <debug.h>
 #include <stddef.h>
 
+void check_addr(char *addr);
+//int create_fd(struct file *f);
+struct file *fd_to_file(int fd);
+void process_close_file(int fd);
 typedef int pid_t;
-struct lock *filesys_lock;
 void syscall_init (void);
 /* Projects 2 and later. */
 void halt (void); //NO_RETURN
