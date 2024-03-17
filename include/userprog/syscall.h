@@ -5,7 +5,7 @@
 #include <debug.h>
 #include <stddef.h>
 
-void check_addr(char *addr);
+bool check_addr(char *addr);
 //int create_fd(struct file *f);
 struct file *fd_to_file(int fd);
 void process_close_file(int fd);

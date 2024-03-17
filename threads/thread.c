@@ -296,9 +296,9 @@ thread_create (const char *name, int priority,
 	 Yield the CPU if the newly arriving thread has higher priority*/
 	thread_preemption();
 
-	t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); // 추가
-    if (t->fdt == NULL) // 추가
-        return TID_ERROR; // 추가
+	// t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); // 추가
+    // if (t->fdt == NULL) // 추가
+    //     return TID_ERROR; // 추가
 	
 	return tid;
 }
@@ -543,7 +543,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	
 	t->exit_status=0;
 
-	t->next_fd = 2;
+	// t->next_fd = 2;
 
 }
 
