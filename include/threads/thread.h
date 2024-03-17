@@ -114,9 +114,11 @@ struct thread {
 
 	int exit_status;
 
-
 	struct file *fdt[64];
+
 	int fd_idx;
+	
+	struct file* exec_file;
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */

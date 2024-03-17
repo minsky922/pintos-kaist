@@ -7,15 +7,16 @@
 
 bool check_addr(char *addr);
 //int create_fd(struct file *f);
-struct file *fd_to_file(int fd);
-void process_close_file(int fd);
+void del_fd(int fd);
+struct file* find_file_by_fd(int fd);
+int create_fd(struct file *file);
 typedef int pid_t;
 void syscall_init (void);
 /* Projects 2 and later. */
 void halt (void); //NO_RETURN
 void exit (int status);// NO_RETURN
 pid_t fork (const char *thread_name);
-int exec (const char *file);
+int exec (const char *cmd_line);
 int wait (pid_t);
 bool create (const char *file, unsigned initial_size);
 bool remove (const char *file);

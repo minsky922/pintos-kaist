@@ -20,6 +20,7 @@
         "filesys.h": "c",
         "input.h": "c",
         "main.h": "c",
-        "process.h": "c"
+        "process.h": "c",
+        "vaddr.h": "c"
     }
 }

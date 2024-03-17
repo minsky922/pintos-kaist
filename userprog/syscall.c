@@ -2,17 +2,20 @@
 #include <stdio.h>
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
-#include "userprog/syscall.h"
-#include <stdio.h>
-#include <syscall-nr.h>
-#include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/loader.h"
 #include "userprog/gdt.h"
+#include "userprog/process.h"
 #include "threads/flags.h"
 #include "intrinsic.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
+#include "threads/vaddr.h"
+#include "threads/palloc.h"
+#include "threads/synch.h"
+#include "devices/input.h"
+#include "lib/kernel/stdio.h"
+#include "vm/vm.h"
 
 // struct lock filesys_lock;
 void syscall_entry (void);
@@ -135,12 +138,25 @@ void exit (int status)
 }
 
 pid_t fork (const char *thread_name){
-	return process_fork(thread_name, thread_current()->tf);
+	// struct thread *curr = thread_current ();
+	// return process_fork(thread_name, curr->tf);
 }
 
-int exec (const char *file){
-	return process_exec(file);
+/* process_create_initd 과 유사, thread_create은 fork에서 */
+int exec (const char *cmd_line){
+	if(!check_addr(cmd_line))
+		exit(-1);
+
+	int size = strlen(cmd_line) + 1;
+	char *cmd_line_copy;
+	cmd_line_copy = palloc_get_page(0);
+	if (cmd_line_copy == NULL)
+		exit(-1);
+	strlcpy (cmd_line_copy, cmd_line, size);
+	if (process_exec(cmd_line) == -1)
+		exit(-1);
 }
+
 int wait (pid_t child_tid){
 	return process_wait(child_tid);
 }
