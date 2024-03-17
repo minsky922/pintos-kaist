@@ -1,11 +1,14 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/palloc.c:305 in palloc_free_multiple(): assertion `pg_ofs (pages) == 0' failed.
-Call stack: 0x8004218309 0x800420baa7 0x800420bc4a 0x800421c073 0x800421d469 0x800421d127 0x800421cf6e
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218309 0x800421ce8c 0x800421d00b 0x80042090e1 0x80042094ff 0x8004217d3c 0x800421bfb5 0x800421d582 0x800421d240 0x800421d080
 Translation of call stack:
 0x0000008004218309: debug_panic (lib/kernel/debug.c:32)
-0x000000800420baa7: palloc_free_multiple (threads/palloc.c:306)
-0x000000800420bc4a: palloc_free_page (threads/palloc.c:329)
-0x000000800421c073: process_exec (userprog/process.c:248)
-0x000000800421d469: exec (userprog/syscall.c:156)
-0x000000800421d127: syscall_handler (userprog/syscall.c:78)
-0x000000800421cf6e: no_sti (userprog/syscall-entry.o:?)
+0x000000800421ce8c: kill (userprog/exception.c:103)
+0x000000800421d00b: page_fault (userprog/exception.c:160 (discriminator 12))
+0x00000080042090e1: intr_handler (threads/interrupt.c:352)
+0x00000080042094ff: intr_entry (threads/intr-stubs.o:?)
+0x0000008004217d3c: strlcpy (lib/string.c:314)
+0x000000800421bfb5: process_exec (userprog/process.c:232 (discriminator 3))
+0x000000800421d582: exec (userprog/syscall.c:159)
+0x000000800421d240: syscall_handler (userprog/syscall.c:78)
+0x000000800421d080: no_sti (userprog/syscall-entry.o:?)

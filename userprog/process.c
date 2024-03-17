@@ -187,10 +187,20 @@ process_exec (void *f_name) {
 	/* We first kill the current context */
 	process_cleanup ();
 
+	char *fn_copy;
+	fn_copy = palloc_get_page (0);
+	if (fn_copy == NULL)
+		return TID_ERROR;
+	strlcpy (fn_copy, file_name, PGSIZE);
+	char *token, *save_ptrr;
+	token = strtok_r(fn_copy," ",&save_ptrr);
 
 	/* And then load the binary */
-	success = load (file_name, &_if);
-	
+	success = load (token, &_if);
+
+	palloc_free_page(fn_copy);
+
+	//argument_passing(f_name);
 	int arg_cnt=1;
 	char *save_ptr;
 
@@ -409,16 +419,24 @@ load (const char *file_name, struct intr_frame *if_) {
 		goto done;
 	process_activate (thread_current ());
 
-
-
+	// printf("1.%s\n",file_name);
+	// char *fn_copy;
+	// fn_copy = palloc_get_page (0);
+	// if (fn_copy == NULL)
+	// 	return TID_ERROR;
+	// strlcpy (fn_copy, file_name, PGSIZE);
+	// char *token, *save_ptr;
+	// token = strtok_r(fn_copy," ",&save_ptr);
+	// printf("2.%s\n",token);
 
 	/* Open executable file. */
-	file = filesys_open (thread_current()->name);
+	file = filesys_open (file_name);
+	// printf("###########%p\n",file);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
 		goto done;
 	}
-
+	// palloc_free_page(fn_copy);
 	/* file_deny_write*/
 	t->exec_file=file;
     file_deny_write(file);

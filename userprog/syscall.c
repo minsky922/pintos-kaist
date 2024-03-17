@@ -55,7 +55,7 @@ syscall_init (void) {
 // 	}
 // }
 bool check_addr(char* addr){
-	if(!is_user_vaddr(addr)|| !pml4_get_page(thread_current()->pml4,addr))
+	if(!addr || !is_user_vaddr(addr)|| !pml4_get_page(thread_current()->pml4,addr))
 		return false;
 	return true;
 }
@@ -144,16 +144,19 @@ pid_t fork (const char *thread_name){
 
 /* process_create_initd 과 유사, thread_create은 fork에서 */
 int exec (const char *cmd_line){
+	// struct file *open_file = filesys_open(cmd_line);
+	// if(open_file == NULL){
+	// 	return -1;
+	// }
 	if(!check_addr(cmd_line))
 		exit(-1);
-
 	int size = strlen(cmd_line) + 1;
 	char *cmd_line_copy;
 	cmd_line_copy = palloc_get_page(0);
 	if (cmd_line_copy == NULL)
 		exit(-1);
 	strlcpy (cmd_line_copy, cmd_line, size);
-	if (process_exec(cmd_line) == -1)
+	if (process_exec(cmd_line_copy) == -1)
 		exit(-1);
 }
 
