@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include <debug.h>
 #include <stddef.h>
+#include "threads/interrupt.h"
 
+struct lock filesys_lock;
 bool check_addr(char *addr);
 //int create_fd(struct file *f);
 void del_fd(int fd);
@@ -15,7 +17,7 @@ void syscall_init (void);
 /* Projects 2 and later. */
 void halt (void); //NO_RETURN
 void exit (int status);// NO_RETURN
-pid_t fork (const char *thread_name);
+pid_t fork (const char *thread_name, const struct intr_frame *f);
 int exec (const char *cmd_line);
 int wait (pid_t);
 bool create (const char *file, unsigned initial_size);

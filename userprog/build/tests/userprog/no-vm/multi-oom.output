@@ -4,7 +4,7 @@ Kernel command line: -q -f put multi-oom run multi-oom
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  78,540,800 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -13,16 +13,15 @@ Boot complete.
 Putting 'multi-oom' into the file system...
 Executing 'multi-oom':
 (multi-oom) begin
-(multi-oom) Spawned at least 10 children.
-(multi-oom) Spawned at least 10 children.: FAILED
-multi-oom: exit(1)
-Execution of 'multi-oom' complete.
-Timer: 62 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 2 user ticks
+Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
+Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x40037b 0x40044b 0x400fb0.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 60 ticks
+Thread: 30 idle ticks, 29 kernel ticks, 1 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 83 reads, 242 writes
 hd1:0: 107 reads, 0 writes
-Console: 915 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1138 characters output
+Key

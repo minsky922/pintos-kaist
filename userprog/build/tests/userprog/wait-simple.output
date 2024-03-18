@@ -4,7 +4,7 @@ Kernel command line: -q -f put wait-simple put child-simple run wait-simple
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  68,710,400 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 204 sector (102 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -14,16 +14,15 @@ Putting 'wait-simple' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'wait-simple':
 (wait-simple) begin
-(wait-simple) wait(exec()) = 4
-(wait-simple) end
-wait-simple: exit(0)
-Execution of 'wait-simple' complete.
-Timer: 66 ticks
-Thread: 30 idle ticks, 33 kernel ticks, 3 user ticks
+Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
+Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x400106 0x4001b3 0x400c54.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 63 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 1 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 107 reads, 446 writes
 hd1:0: 204 reads, 0 writes
-Console: 952 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1214 characters output
+Key

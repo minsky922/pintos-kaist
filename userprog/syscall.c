@@ -46,7 +46,7 @@ syscall_init (void) {
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
 
-	//lock_init(&filesys_lock);
+	lock_init(&filesys_lock);
 }
 
 // void check_addr(char *addr){
@@ -72,7 +72,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		exit(f->R.rdi);
 		break;
 	case SYS_FORK:
-		f->R.rax = fork(f->R.rdi);
+		f->R.rax = fork(f->R.rdi,f);
 		break;
 	case SYS_EXEC:  
 		f->R.rax = exec(f->R.rdi);
@@ -137,9 +137,9 @@ void exit (int status)
     thread_exit();
 }
 
-pid_t fork (const char *thread_name){
+pid_t fork (const char *thread_name, const struct intr_frame *f){
 	struct thread *curr = thread_current ();
-	return process_fork(thread_name, &curr->tf);
+	return process_fork(thread_name, f);
 }
 
 /* process_create_initd 과 유사, thread_create은 fork에서 */
@@ -169,21 +169,21 @@ int create_fd(struct file *file){
 		int idx = curr->fd_idx;
 		curr->fdt[idx] = file;
 		curr->fd_idx ++;
-		return idx+2;
+		return idx;
 	}
 	return -1;
 }
 
 struct file* find_file_by_fd(int fd){
-	fd -=2;
-	if(fd >64 || fd <0)
+	//fd -=2;
+	if(fd >64 || fd <3)
 		exit(-1);
 	struct thread *curr = thread_current();
 	return curr->fdt[fd];
 }
 
 void del_fd(int fd){
-	fd -= 2;
+	//fd -= 2;
 	struct thread *curr = thread_current();
 
 	if(fd == curr->fd_idx-1)
@@ -277,7 +277,9 @@ int write (int fd, const void *buffer, unsigned length){
 		if(check_addr(buffer) == 0)
 			exit(-1);
 		struct file *file = find_file_by_fd(fd);
+		//lock_acquire(&filesys_lock);
 		return file_write(file,buffer,length);
+		//lock_release(&filesys_lock);
 	}
 }
 

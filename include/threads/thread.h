@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -124,7 +125,11 @@ struct thread {
 
 	struct list_elem child_elem;
 
-	struct semaphore *wait_sema;
+	struct semaphore wait_sema;
+
+	struct semaphore child_load_sema;
+
+	struct intr_frame *parent_if;
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */

@@ -4,7 +4,7 @@ Kernel command line: -q -f put syn-read put child-syn-read run syn-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  83,456,000 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 321 sector (160 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 225 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,26 +18,15 @@ Executing 'syn-read':
 (syn-read) open "data"
 (syn-read) write "data"
 (syn-read) close "data"
-(syn-read) exec child 1 of 10: "child-syn-read 0"
-(syn-read) exec child 2 of 10: "child-syn-read 1"
-(syn-read) exec child 3 of 10: "child-syn-read 2"
-(syn-read) exec child 4 of 10: "child-syn-read 3"
-(syn-read) exec child 5 of 10: "child-syn-read 4"
-(syn-read) exec child 6 of 10: "child-syn-read 5"
-(syn-read) exec child 7 of 10: "child-syn-read 6"
-(syn-read) exec child 8 of 10: "child-syn-read 7"
-(syn-read) exec child 9 of 10: "child-syn-read 8"
-(syn-read) exec child 10 of 10: "child-syn-read 9"
-(syn-read) wait for child 1 of 10 returned 4 (expected 0)
-(syn-read) wait for child 1 of 10 returned 4 (expected 0): FAILED
-syn-read: exit(1)
-Execution of 'syn-read' complete.
-Timer: 72 ticks
-Thread: 30 idle ticks, 35 kernel ticks, 8 user ticks
+Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
+Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x4006a9 0x4002a6 0x400fa7 0x400ff0.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 66 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 137 reads, 504 writes
 hd1:0: 225 reads, 0 writes
-Console: 1607 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1308 characters output
+Key

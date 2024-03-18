@@ -15,26 +15,15 @@ Putting 'child-syn-wrt' into the file system...
 Executing 'syn-write':
 (syn-write) begin
 (syn-write) create "stuff"
-(syn-write) exec child 1 of 10: "child-syn-wrt 0"
-(syn-write) exec child 2 of 10: "child-syn-wrt 1"
-(syn-write) exec child 3 of 10: "child-syn-wrt 2"
-(syn-write) exec child 4 of 10: "child-syn-wrt 3"
-(syn-write) exec child 5 of 10: "child-syn-wrt 4"
-(syn-write) exec child 6 of 10: "child-syn-wrt 5"
-(syn-write) exec child 7 of 10: "child-syn-wrt 6"
-(syn-write) exec child 8 of 10: "child-syn-wrt 7"
-(syn-write) exec child 9 of 10: "child-syn-wrt 8"
-(syn-write) exec child 10 of 10: "child-syn-wrt 9"
-(syn-write) wait for child 1 of 10 returned 4 (expected 0)
-(syn-write) wait for child 1 of 10 returned 4 (expected 0): FAILED
-syn-write: exit(1)
-Execution of 'syn-write' complete.
-Timer: 73 ticks
-Thread: 30 idle ticks, 35 kernel ticks, 8 user ticks
+Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
+Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x4006a7 0x40017e 0x400fa5 0x400fee.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 67 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 132 reads, 512 writes
 hd1:0: 226 reads, 0 writes
-Console: 1546 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1242 characters output
+Key

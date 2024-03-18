@@ -27,6 +27,7 @@ static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
 static void initd (void *f_name);
 static void __do_fork (void *);
+struct thread *find_child(tid_t child_tid);
 
 /* General process initializer for initd and other process. */
 static void
@@ -76,11 +77,26 @@ initd (void *f_name) {
 
 /* Clones the current process as `name`. Returns the new process's thread id, or
  * TID_ERROR if the thread cannot be created. */
+// tid_t
+// process_fork (const char *name, struct intr_frame *if_ UNUSED) {
+// 	/* Clone current thread to new thread.*/
+// 	struct thread *curr = thread_current();
+// 	memcpy (curr->parent_if, &if_, sizeof (struct intr_frame));
+// 	return thread_create (name,
+// 			PRI_DEFAULT, __do_fork, thread_current ());
+// }
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
-	return thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+	tid_t tid = thread_create (name, PRI_DEFAULT, __do_fork, thread_current ());
+	if (tid == TID_ERROR){
+		return TID_ERROR;
+	}
+	struct thread *curr = thread_current();
+	memcpy(curr->parent_if, &if_, sizeof (struct intr_frame)); // &curr->tf를 parent_if에 copy
+	struct thread *t = find_child(tid);
+	sema_down(&t->child_load_sema);
+	return tid;
 }
 
 #ifndef VM
@@ -113,15 +129,13 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	writable = is_writable(pte);
 	/* 5. Add new page to child's page table at address VA with WRITABLE
 	 *    permission. */
-	if (!pml4_set_page(current->pml4, va, newpage, writable))
-	{
 	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
 		/* 6. TODO: if fail to insert page, do error handling. */
 		return false;
 	}
 	return true;
 }
-}
+
 #endif
 
 /* A thread function that copies parent's execution context.
@@ -134,9 +148,9 @@ __do_fork (void *aux) {
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
-	struct intr_frame *parent_if;
+	struct intr_frame *parent_if = &parent->parent_if;
 	bool succ = true;
-
+	if_.R.rax = 0;
 	/* 1. Read the cpu context to local stack. */
 	memcpy (&if_, parent_if, sizeof (struct intr_frame));
 
@@ -160,7 +174,11 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
-
+	for(int i=0; i<parent->fd_idx; i++){
+		current->fdt[i] = file_duplicate(parent->fdt[i]);
+	}
+	current->fd_idx = parent->fd_idx;
+	sema_up(&current->child_load_sema);
 	process_init ();
 
 	/* Finally, switch to the newly created process. */

@@ -21,6 +21,8 @@
         "input.h": "c",
         "main.h": "c",
         "process.h": "c",
-        "vaddr.h": "c"
+        "vaddr.h": "c",
+        "palloc.h": "c",
+        "mmu.h": "c"
     }
 }

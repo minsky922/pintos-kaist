@@ -1,38 +1,14 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (fork-multiple) begin
-  (fork-multiple) child run
-  child: exit(4)
-  (fork-multiple) Parent: child exit status is 4
-  (fork-multiple) child run
-  child: exit(5)
-  (fork-multiple) Parent: child exit status is 5
-  (fork-multiple) child run
-  child: exit(6)
-  (fork-multiple) Parent: child exit status is 6
-  (fork-multiple) child run
-  child: exit(7)
-  (fork-multiple) Parent: child exit status is 7
-  (fork-multiple) end
-  fork-multiple: exit(0)
-Differences in `diff -u' format:
-  (fork-multiple) begin
-- (fork-multiple) child run
-- child: exit(4)
-  (fork-multiple) Parent: child exit status is 4
-- (fork-multiple) child run
-- child: exit(5)
-- (fork-multiple) Parent: child exit status is 5
-- (fork-multiple) child run
-- child: exit(6)
-- (fork-multiple) Parent: child exit status is 6
-- (fork-multiple) child run
-- child: exit(7)
-- (fork-multiple) Parent: child exit status is 7
-+ (fork-multiple) Parent: child exit status is 4
-+ (fork-multiple) Parent: child exit status is 4
-+ (fork-multiple) Parent: child exit status is 4
-  (fork-multiple) end
-  fork-multiple: exit(0)
+Kernel panic in run: PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
+Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x400121 0x4001a7 0x400229 0x400cca
+Translation of call stack:
+0x00000080042183df: debug_panic (lib/kernel/debug.c:32)
+0x0000008004217320: memcpy (lib/string.c:12)
+0x000000800421bb37: process_fork (userprog/process.c:97)
+0x000000800421d7ff: fork (userprog/syscall.c:143)
+0x000000800421d510: syscall_handler (userprog/syscall.c:75)
+0x000000800421d357: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400121: (unknown)
+0x00000000004001a7: (unknown)
+0x0000000000400229: (unknown)
+0x0000000000400cca: (unknown)

@@ -551,7 +551,12 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	sema_init(&t->wait_sema,0);
 
-	// t->next_fd = 2;
+	sema_init(&t->child_load_sema,0);
+
+	t->fd_idx = 3;
+	t->fdt[0] = 0;
+	t->fdt[1] = 0;
+	t->fdt[2] = 0;
 
 }
 
