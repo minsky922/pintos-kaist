@@ -20,6 +20,7 @@ Differences in `diff -u' format:
 - (child-close) end
 - child-close: exit(0)
 - (multi-child-fd) wait(exec()) = 0
-- (multi-child-fd) verified contents of "sample.txt"
-- (multi-child-fd) end
-- multi-child-fd: exit(0)
++ (multi-child-fd) wait(exec()) = 4
+  (multi-child-fd) verified contents of "sample.txt"
+  (multi-child-fd) end
+  multi-child-fd: exit(0)

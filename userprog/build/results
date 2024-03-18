@@ -49,7 +49,7 @@ FAIL tests/userprog/exec-read
 FAIL tests/userprog/wait-simple
 FAIL tests/userprog/wait-twice
 FAIL tests/userprog/wait-killed
-FAIL tests/userprog/wait-bad-pid
+pass tests/userprog/wait-bad-pid
 FAIL tests/userprog/multi-recurse
 FAIL tests/userprog/multi-child-fd
 pass tests/userprog/rox-simple
@@ -64,8 +64,8 @@ FAIL tests/userprog/bad-jump2
 pass tests/filesys/base/lg-create
 pass tests/filesys/base/lg-full
 FAIL tests/filesys/base/lg-random
-FAIL tests/filesys/base/lg-seq-block
-FAIL tests/filesys/base/lg-seq-random
+pass tests/filesys/base/lg-seq-block
+pass tests/filesys/base/lg-seq-random
 pass tests/filesys/base/sm-create
 pass tests/filesys/base/sm-full
 FAIL tests/filesys/base/sm-random

@@ -119,6 +119,12 @@ struct thread {
 	int fd_idx;
 	
 	struct file* exec_file;
+
+	struct list child_list;
+
+	struct list_elem child_elem;
+
+	struct semaphore *wait_sema;
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */

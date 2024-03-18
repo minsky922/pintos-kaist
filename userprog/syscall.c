@@ -130,16 +130,16 @@ void halt (void)
 
 void exit (int status)
 {
-	 struct thread *cur = thread_current (); 
+	struct thread *cur = thread_current (); 
     /* Save exit status at process descriptor */
-	
+	cur->exit_status = status;
     printf("%s: exit(%d)\n" , cur -> name , status);
     thread_exit();
 }
 
 pid_t fork (const char *thread_name){
-	// struct thread *curr = thread_current ();
-	// return process_fork(thread_name, curr->tf);
+	struct thread *curr = thread_current ();
+	return process_fork(thread_name, &curr->tf);
 }
 
 /* process_create_initd 과 유사, thread_create은 fork에서 */

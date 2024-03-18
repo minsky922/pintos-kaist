@@ -18,6 +18,7 @@
 #include "threads/mmu.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -274,15 +275,31 @@ process_exec (void *f_name) {
  *
  * This function will be implemented in problem 2-2.  For now, it
  * does nothing. */
+struct thread *find_child(tid_t child_tid){
+	struct thread *curr = thread_current();
+	struct list_elem *e;
+	for (e=list_begin(&curr->child_list);e != list_end(&curr->child_list);e=list_next(e)){
+		struct thread *t = list_entry(e,struct thread,child_elem);
+		if (t->tid == child_tid){
+			return t;
+		}
+	}
+	return NULL;
+}
 int
 process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
-	// for (int i=0; i<1000000; i++);
-	timer_sleep(10);
+	struct thread *t = find_child(child_tid);
+	if (t == NULL){
+		return -1;
+	}
+	sema_down(&t->wait_sema);
 	
-	return -1;
+	//timer_sleep(10);
+	
+	return t->exit_status;
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -299,6 +316,7 @@ process_exit (void) {
  	for(i=0;i<64;i++){
     del_fd(i);
   }
+	sema_up(&thread_current()->wait_sema);
 	process_cleanup ();
 }
 

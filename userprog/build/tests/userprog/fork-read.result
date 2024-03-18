@@ -18,6 +18,6 @@ Differences in `diff -u' format:
 - (fork-read) Child: pintos is funny!
 - (fork-read) end
 - child: exit(0)
-- (fork-read) Parent success
-- (fork-read) end
-- fork-read: exit(0)
+  (fork-read) Parent success
+  (fork-read) end
+  fork-read: exit(0)

@@ -13,8 +13,9 @@ Differences in `diff -u' format:
 - (child-bad) begin
 - child-bad: exit(-1)
 - (wait-killed) wait(exec()) = -1
-- (wait-killed) end
-- wait-killed: exit(0)
++ (wait-killed) wait(exec()) = 4
+  (wait-killed) end
+  wait-killed: exit(0)
 Acceptable output:
   (wait-killed) begin
   (child-bad) begin
@@ -29,5 +30,6 @@ Differences in `diff -u' format:
 - load: pintos: open failed
 - child-bad: exit(-1)
 - (wait-killed) wait(exec()) = -1
-- (wait-killed) end
-- wait-killed: exit(0)
++ (wait-killed) wait(exec()) = 4
+  (wait-killed) end
+  wait-killed: exit(0)

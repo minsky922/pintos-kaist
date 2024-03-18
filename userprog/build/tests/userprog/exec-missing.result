@@ -1,14 +1,14 @@
 FAIL
 Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
-Call stack: 0x8004218309 0x800421ce8c 0x800421d00b 0x80042090e1 0x80042094ff 0x8004217d3c 0x800421bfb5 0x800421d582 0x800421d240 0x800421d080
+Call stack: 0x8004218386 0x800421cfef 0x800421d16e 0x800420915e 0x800420957c 0x8004217db9 0x800421c032 0x800421d6f2 0x800421d3a3 0x800421d1e3
 Translation of call stack:
-0x0000008004218309: debug_panic (lib/kernel/debug.c:32)
-0x000000800421ce8c: kill (userprog/exception.c:103)
-0x000000800421d00b: page_fault (userprog/exception.c:160 (discriminator 12))
-0x00000080042090e1: intr_handler (threads/interrupt.c:352)
-0x00000080042094ff: intr_entry (threads/intr-stubs.o:?)
-0x0000008004217d3c: strlcpy (lib/string.c:314)
-0x000000800421bfb5: process_exec (userprog/process.c:232 (discriminator 3))
-0x000000800421d582: exec (userprog/syscall.c:159)
-0x000000800421d240: syscall_handler (userprog/syscall.c:78)
-0x000000800421d080: no_sti (userprog/syscall-entry.o:?)
+0x0000008004218386: debug_panic (lib/kernel/debug.c:32)
+0x000000800421cfef: kill (userprog/exception.c:103)
+0x000000800421d16e: page_fault (userprog/exception.c:160 (discriminator 12))
+0x000000800420915e: intr_handler (threads/interrupt.c:352)
+0x000000800420957c: intr_entry (threads/intr-stubs.o:?)
+0x0000008004217db9: strlcpy (lib/string.c:314)
+0x000000800421c032: process_exec (userprog/process.c:233 (discriminator 3))
+0x000000800421d6f2: exec (userprog/syscall.c:159)
+0x000000800421d3a3: syscall_handler (userprog/syscall.c:78)
+0x000000800421d1e3: no_sti (userprog/syscall-entry.o:?)
