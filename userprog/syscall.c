@@ -81,9 +81,6 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = wait(f->R.rdi);
 		break;
 	case SYS_CREATE:
-		if(!check_addr(f->R.rdi)){
-			exit(-1);
-		}
 		if(f->R.rdi ==NULL || strcmp(f->R.rdi,"")== 0)
 			exit(-1);
 		if (!create(f->R.rdi,f->R.rsi))
@@ -92,11 +89,9 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			f->R.rax = true;
 		break;
 	case SYS_REMOVE:
-		remove(f->R.rdi);
+		f->R.rax = remove(f->R.rdi);
 		break;
 	case SYS_OPEN:
-		if(!check_addr(f->R.rdi))
-			exit(-1);
 		f->R.rax = open(f->R.rdi);
 
 		break;
@@ -112,8 +107,10 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = write(f->R.rdi,f->R.rsi,f->R.rdx);
 		break;
 	case SYS_SEEK:
+		seek(f->R.rdi, f->R.rsi);
 		break;
 	case SYS_TELL:
+		f->R.rax = tell(f->R.rdi);
 		break;
 	case SYS_CLOSE:
 		close(f->R.rdi);
@@ -198,9 +195,16 @@ void del_fd(int fd){
 	}	 
 }
 bool create (const char *file, unsigned initial_size){
+	if(!check_addr(file)){
+			exit(-1);
+		}
+	lock_acquire(&filesys_lock);
 	if(strlen(file) >= 511)
 		return 0;
-	return filesys_create(file,initial_size);
+	bool success = filesys_create(file,initial_size);
+	lock_release(&filesys_lock);
+	return success;
+	
 }
 // bool create (const char *file, unsigned initial_size){
 // 	// check_addr(file);
@@ -217,17 +221,24 @@ bool create (const char *file, unsigned initial_size){
 // 	return success;
 // 	}
 bool remove (const char *file){
-	return filesys_remove(file);
+	lock_acquire(&filesys_lock);
+	bool success = filesys_remove(file);
+	lock_release(&filesys_lock);
+	return success;
 }
 
 int open (const char *file){
-	if(file == NULL){
-		exit(-1);
-	}
+	if(!check_addr(file))
+			exit(-1);
+	// if(file == NULL){
+	// 	exit(-1);
+	// }
+	lock_acquire(&filesys_lock);
 	if(strcmp(file,"")== 0){
 		return -1;
 	}
 	struct file *open_file = filesys_open(file);
+	lock_release(&filesys_lock);
 	if(open_file == NULL){
 		return -1;
 	}else {
@@ -259,13 +270,31 @@ int filesize (int fd){
 }
 
 int read (int fd, void *buffer, unsigned length){
-	struct file *file = find_file_by_fd(fd);
 	if(!check_addr(buffer))
 			exit(-1);
+	char *ptr = (char *)buffer;
+
+	if (fd == 0){
+			lock_acquire(&filesys_lock);
+		for (int bytes_read = 0; bytes_read<length; bytes_read++){
+			char ch = input_getc();
+			if (ch == '\n'){
+				break;
+			*ptr = ch;
+            ptr++;
+			}
+			lock_release(&filesys_lock);
+			return bytes_read;
+		}
+	}
+	struct file *file = find_file_by_fd(fd);
+	lock_acquire(&filesys_lock);
 	if (file == NULL){
 		return -1;
 	}
-	return file_read(file,buffer,length);
+	int bytes_read = file_read(file,buffer,length);
+	lock_release(&filesys_lock);
+	return bytes_read;
 }
 
 // /* STDIN:0 STDOUT:1*/
@@ -277,9 +306,10 @@ int write (int fd, const void *buffer, unsigned length){
 		if(check_addr(buffer) == 0)
 			exit(-1);
 		struct file *file = find_file_by_fd(fd);
-		//lock_acquire(&filesys_lock);
-		return file_write(file,buffer,length);
-		//lock_release(&filesys_lock);
+		lock_acquire(&filesys_lock);
+		int bytes_written = file_write(file,buffer,length);
+		lock_release(&filesys_lock);
+		return bytes_written;
 	}
 }
 
