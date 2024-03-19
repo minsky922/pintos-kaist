@@ -17,15 +17,23 @@ Executing 'exec-read':
 (exec-read) begin
 (exec-read) open "sample.txt"
 (exec-read) read "sample.txt" first 20 bytes
-Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
-Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x4001d0 0x40046e 0x400f0f.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 67 ticks
-Thread: 30 idle ticks, 34 kernel ticks, 3 user ticks
+(child-read) begin
+(child-read) open "sample.txt"
+(child-read) read "sample.txt" first 20 bytes
+(child-read) read "sample.txt" remainders
+(child-read) Child success
+(child-read) end
+child-read: exit(0)
+(exec-read) Parent success
+(exec-read) end
+exec-read: exit(0)
+Execution of 'exec-read' complete.
+Timer: 73 ticks
+Thread: 30 idle ticks, 35 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 144 reads, 506 writes
+hd0:1: 208 reads, 506 writes
 hd1:0: 229 reads, 0 writes
-Console: 1335 characters output
-Key
+Console: 1266 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

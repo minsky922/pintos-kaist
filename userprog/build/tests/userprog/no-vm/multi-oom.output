@@ -13,15 +13,34 @@ Boot complete.
 Putting 'multi-oom' into the file system...
 Executing 'multi-oom':
 (multi-oom) begin
-Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
-Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x40037b 0x40044b 0x400fb0.
+Page fault at 0: not present error writing page in user context.
+child_6_X: dying due to interrupt 0x0e (#PF Page-Fault Exception).
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=4001b0
+ cr2=0000000000000000 error=               6
+rax 0000000000000000 rbx 0000000000000000 rcx 691060bf082d7331 rdx 0000000000000000
+rsp 000000004747fed0 rbp 000000004747fee0 rsi 000000000060569a rdi 00000000006055a8
+rip 00000000004001b0 r8 0000000000000000  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000212 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000206
+es: 001b ds: 001b cs: 0023 ss: 001b
+Page fault at 0x4c: not present error reading page in kernel context.
+Interrupt 0x0e (#PF Page-Fault Exception) at rip=800421f424
+ cr2=000000000000004c error=               0
+rax 0000000000000040 rbx 000000000000000e rcx 0000000000000010 rdx 0000000000000034
+rsp 0000008004278e00 rbp 0000008004278e10 rsi 000000800426fb68 rdi 0000000000000040
+rip 000000800421f424 r8 0000008004278d88  r9 000000800421b865 r10 0000000000000000
+r11 0000000000000212 r12 0000008004225e72 r13 0000000000000000 r14 0000000000000000
+r15 0000000000000000 rflags 00000202
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x80042183ec 0x800421d1c0 0x800421d33f 0x80042091c4 0x80042095e2 0x800421f1f7 0x800421de1c 0x800421c4e7 0x8004207533 0x800421d178 0x800421d33f 0x80042091c4 0x80042095e2 0x400305 0x40044b 0x400fb0.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 60 ticks
-Thread: 30 idle ticks, 29 kernel ticks, 1 user ticks
+Timer: 75 ticks
+Thread: 30 idle ticks, 29 kernel ticks, 16 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 83 reads, 242 writes
+hd0:1: 219 reads, 242 writes
 hd1:0: 107 reads, 0 writes
-Console: 1138 characters output
+Console: 2460 characters output
 Key

@@ -127,9 +127,11 @@ struct thread {
 
 	struct semaphore wait_sema;
 
+	struct semaphore exit_sema;
+
 	struct semaphore child_load_sema;
 
-	struct intr_frame *parent_if;
+	struct intr_frame parent_if;
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */

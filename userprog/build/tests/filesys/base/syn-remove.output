@@ -22,10 +22,10 @@ Executing 'syn-remove':
 (syn-remove) read "deleteme": FAILED
 syn-remove: exit(1)
 Execution of 'syn-remove' complete.
-Timer: 65 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 5 user ticks
+Timer: 66 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 113 reads, 265 writes
+hd0:1: 115 reads, 275 writes
 hd1:0: 109 reads, 0 writes
 Console: 1053 characters output
 Keyboard: 0 keys pressed

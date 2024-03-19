@@ -15,15 +15,20 @@ Putting 'sample.txt' into the file system...
 Executing 'fork-read':
 (fork-read) begin
 (fork-read) open "sample.txt"
-Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
-Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x400191 0x40053e 0x400fdf.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 63 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 2 user ticks
+(fork-read) child run
+(fork-read) Child: pintos is funny!
+(fork-read) end
+child: exit(0)
+(fork-read) Parent success
+(fork-read) end
+fork-read: exit(0)
+Execution of 'fork-read' complete.
+Timer: 66 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 116 reads, 260 writes
+hd0:1: 118 reads, 260 writes
 hd1:0: 111 reads, 0 writes
-Console: 1229 characters output
-Key
+Console: 1047 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

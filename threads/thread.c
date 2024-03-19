@@ -288,9 +288,7 @@ thread_create (const char *name, int priority,
 	 */
 	t->recent_cpu = thread_current()->recent_cpu;
 
-	if (thread_current()){//부모(thread_current)가 있다면 // t는 자식
-		list_push_back(&thread_current()->child_list,&t->child_elem);
-	}
+	list_push_back(&thread_current()->child_list,&t->child_elem);
 	
 	list_push_back(&all_list,&t->all_elem);
 	/* Add to run queue. */
@@ -550,6 +548,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	list_init (&t->child_list);
 
 	sema_init(&t->wait_sema,0);
+
+	sema_init(&t->exit_sema,0);
 
 	sema_init(&t->child_load_sema,0);
 

@@ -1,4 +1,5 @@
 #include "userprog/process.h"
+#include "userprog/syscall.h"
 #include <debug.h>
 #include <inttypes.h>
 #include <round.h>
@@ -88,14 +89,17 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
+	struct thread *curr = thread_current();
+	memcpy(&curr->parent_if, if_, sizeof (struct intr_frame)); // &curr->tf를 parent_if에 copy
 	tid_t tid = thread_create (name, PRI_DEFAULT, __do_fork, thread_current ());
 	if (tid == TID_ERROR){
 		return TID_ERROR;
 	}
-	struct thread *curr = thread_current();
-	memcpy(curr->parent_if, &if_, sizeof (struct intr_frame)); // &curr->tf를 parent_if에 copy
 	struct thread *t = find_child(tid);
 	sema_down(&t->child_load_sema);
+	if (t->exit_status == TID_ERROR){
+		return TID_ERROR;
+	}
 	return tid;
 }
 
@@ -131,6 +135,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	 *    permission. */
 	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
 		/* 6. TODO: if fail to insert page, do error handling. */
+		//palloc_free_page(newpage);
 		return false;
 	}
 	return true;
@@ -150,9 +155,9 @@ __do_fork (void *aux) {
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
 	struct intr_frame *parent_if = &parent->parent_if;
 	bool succ = true;
-	if_.R.rax = 0;
 	/* 1. Read the cpu context to local stack. */
 	memcpy (&if_, parent_if, sizeof (struct intr_frame));
+	if_.R.rax = 0;
 
 	/* 2. Duplicate PT */
 	current->pml4 = pml4_create();
@@ -174,9 +179,11 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
-	for(int i=0; i<parent->fd_idx; i++){
-		current->fdt[i] = file_duplicate(parent->fdt[i]);
-	}
+	for(int i=3; i<parent->fd_idx; i++){
+		struct file *new_file =file_duplicate(parent->fdt[i]);
+		current->fdt[i] = new_file;
+		}
+			
 	current->fd_idx = parent->fd_idx;
 	sema_up(&current->child_load_sema);
 	process_init ();
@@ -185,7 +192,8 @@ __do_fork (void *aux) {
 	if (succ)
 		do_iret (&if_);
 error:
-	thread_exit ();
+	sema_up(&current->child_load_sema);
+	exit(TID_ERROR);
 }
 
 /* Switch the current execution context to the f_name.
@@ -313,8 +321,9 @@ process_wait (tid_t child_tid UNUSED) {
 	if (t == NULL){
 		return -1;
 	}
-	sema_down(&t->wait_sema);
-	
+	sema_down(&t->wait_sema); //자식이 종료될때까지 대기 (process_exit에서 자식이 종료될때 sema_up)
+	list_remove(&t->child_elem); //자식이 종료됨을 알리는 'wait_signal'을 받으면 현재스레드(부모)의 자식리스트에서 제거
+	sema_up(&t->exit_sema); //자식이 완전히 종료되고 스케줄링이 이어질수 있도록 자식에게 signal을 보낸다.
 	//timer_sleep(10);
 	
 	return t->exit_status;
@@ -330,12 +339,14 @@ process_exit (void) {
 	 * TODO: We recommend you to implement process resource cleanup here. */
 	//printf("%s: exit(%d)\n" , curr -> name , curr->status);
 	int i;
-	file_close(curr->exec_file);
- 	for(i=0;i<64;i++){
-    del_fd(i);
+ 	for(i=3;i<64;i++){
+    //del_fd(i);
+	close(i);
   }
-	sema_up(&thread_current()->wait_sema);
+	file_close(curr->exec_file);
 	process_cleanup ();
+	sema_up(&thread_current()->wait_sema); //자식이 종료 될때까지 대기하고 있는 부모에게 signal을 보낸다.
+	sema_down(&thread_current()->exit_sema); //부모의 signal을 기다린다. 대기가 풀리고나서 	do_schedule(thread_dying)이 이어져 다른 스레드가 실행된다.
 }
 
 /* Free the current process's resources. */

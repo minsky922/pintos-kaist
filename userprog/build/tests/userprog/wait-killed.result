@@ -1,13 +1,14 @@
 FAIL
-Kernel panic in run: PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
-Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x400106 0x4001b3 0x400c54
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x80042183ec 0x800421d1c0 0x800421d33f 0x80042091c4 0x80042095e2 0x8004217e1f 0x800421c1b5 0x800421d91b 0x800421d594 0x800421d3b4
 Translation of call stack:
-0x00000080042183df: debug_panic (lib/kernel/debug.c:32)
-0x0000008004217320: memcpy (lib/string.c:12)
-0x000000800421bb37: process_fork (userprog/process.c:97)
-0x000000800421d7ff: fork (userprog/syscall.c:143)
-0x000000800421d510: syscall_handler (userprog/syscall.c:75)
-0x000000800421d357: no_sti (userprog/syscall-entry.o:?)
-0x0000000000400106: (unknown)
-0x00000000004001b3: (unknown)
-0x0000000000400c54: (unknown)
+0x00000080042183ec: debug_panic (lib/kernel/debug.c:32)
+0x000000800421d1c0: kill (userprog/exception.c:103)
+0x000000800421d33f: page_fault (userprog/exception.c:160 (discriminator 12))
+0x00000080042091c4: intr_handler (threads/interrupt.c:352)
+0x00000080042095e2: intr_entry (threads/intr-stubs.o:?)
+0x0000008004217e1f: strlcpy (lib/string.c:314)
+0x000000800421c1b5: process_exec (userprog/process.c:259 (discriminator 3))
+0x000000800421d91b: exec (userprog/syscall.c:159)
+0x000000800421d594: syscall_handler (userprog/syscall.c:78)
+0x000000800421d3b4: no_sti (userprog/syscall-entry.o:?)

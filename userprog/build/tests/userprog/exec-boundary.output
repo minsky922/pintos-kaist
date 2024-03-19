@@ -14,15 +14,19 @@ Putting 'exec-boundary' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'exec-boundary':
 (exec-boundary) begin
-Kernel PANIC at ../../lib/string.c:11 in memcpy(): assertion `dst != NULL || size == 0' failed.
-Call stack: 0x80042183df 0x8004217320 0x800421bb37 0x800421d7ff 0x800421d510 0x800421d357 0x400106 0x4002f1 0x400d92.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 63 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 1 user ticks
+(child-simple) run
+child-simple: exit(81)
+(exec-boundary) fork
+(exec-boundary) wait
+(exec-boundary) end
+exec-boundary: exit(0)
+Execution of 'exec-boundary' complete.
+Timer: 68 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 107 reads, 452 writes
+hd0:1: 159 reads, 452 writes
 hd1:0: 207 reads, 0 writes
-Console: 1224 characters output
-Key
+Console: 1022 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

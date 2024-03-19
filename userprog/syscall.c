@@ -78,7 +78,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = exec(f->R.rdi);
 		break;
 	case SYS_WAIT:
-		wait(f->R.rdi);
+		f->R.rax = wait(f->R.rdi);
 		break;
 	case SYS_CREATE:
 		if(!check_addr(f->R.rdi)){
