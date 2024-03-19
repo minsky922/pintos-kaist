@@ -298,9 +298,9 @@ thread_create (const char *name, int priority,
 	 Yield the CPU if the newly arriving thread has higher priority*/
 	thread_preemption();
 
-	// t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); // 추가
-    // if (t->fdt == NULL) // 추가
-    //     return TID_ERROR; // 추가
+	t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); 
+    if (t->fdt == NULL) 
+        return TID_ERROR; 
 	
 	return tid;
 }
@@ -553,10 +553,10 @@ init_thread (struct thread *t, const char *name, int priority) {
 
 	sema_init(&t->child_load_sema,0);
 
-	t->fd_idx = 3;
-	t->fdt[0] = 0;
-	t->fdt[1] = 0;
-	t->fdt[2] = 0;
+	t->fd_idx = 2;
+	// t->fdt[0] = 0;
+	// t->fdt[1] = 0;
+	// t->fdt[2] = 0;
 
 }
 

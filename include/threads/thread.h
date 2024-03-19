@@ -115,8 +115,10 @@ struct thread {
 
 	int exit_status;
 
-	struct file *fdt[64];
-
+	//struct file *fdt[64];
+	
+	struct file **fdt;
+	
 	int fd_idx;
 	
 	struct file* exec_file;

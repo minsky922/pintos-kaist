@@ -81,12 +81,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		f->R.rax = wait(f->R.rdi);
 		break;
 	case SYS_CREATE:
-		if(f->R.rdi ==NULL || strcmp(f->R.rdi,"")== 0)
-			exit(-1);
-		if (!create(f->R.rdi,f->R.rsi))
-			f->R.rax = false;
-		else 
-			f->R.rax = true;
+		f->R.rax = create(f->R.rdi, f->R.rsi);
 		break;
 	case SYS_REMOVE:
 		f->R.rax = remove(f->R.rdi);
@@ -114,8 +109,6 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		break;
 	case SYS_CLOSE:
 		close(f->R.rdi);
-		break;
-	default:
 		break;
 	}
 }
@@ -147,12 +140,12 @@ int exec (const char *cmd_line){
 	// }
 	if(!check_addr(cmd_line))
 		exit(-1);
-	int size = strlen(cmd_line) + 1;
+	// int size = strlen(cmd_line) + 1;
 	char *cmd_line_copy;
 	cmd_line_copy = palloc_get_page(0);
 	if (cmd_line_copy == NULL)
 		exit(-1);
-	strlcpy (cmd_line_copy, cmd_line, size);
+	strlcpy (cmd_line_copy, cmd_line, PGSIZE);
 	if (process_exec(cmd_line_copy) == -1)
 		exit(-1);
 }
@@ -160,47 +153,93 @@ int exec (const char *cmd_line){
 int wait (pid_t child_tid){
 	return process_wait(child_tid);
 }
+
+// int create_fd(struct file *file){
+// 	struct thread *curr = thread_current();
+// 	if(curr->fd_idx <128){
+// 		int idx = curr->fd_idx;
+// 		curr->fdt[idx] = file;
+// 		curr->fd_idx ++;
+// 		return idx;
+// 	}
+// 	return -1;
+// }
+
 int create_fd(struct file *file){
-	struct thread *curr = thread_current();
-	if(curr->fd_idx <64){
-		int idx = curr->fd_idx;
-		curr->fdt[idx] = file;
-		curr->fd_idx ++;
-		return idx;
-	}
-	return -1;
+	// struct thread *curr = thread_current();
+	// struct file **fdt = curr->fdt;
+	// if(curr->fd_idx <128){
+	// 	int idx = curr->fd_idx;
+	// 	curr->fdt[idx] = file;
+	// 	curr->fd_idx ++;
+	// 	return idx;
+	// }
+	// return -1;
+	struct thread*curr = thread_current();
+	struct file**fdt = curr->fdt;
+
+	while(curr->fd_idx<FDT_COUNT_LIMIT&&fdt[curr->fd_idx])
+		curr->fd_idx++;
+		if(curr->fd_idx >= FDT_COUNT_LIMIT)
+			return -1;
+		fdt[curr->fd_idx] =file;
+
+		return curr->fd_idx;
+	
+	// for (int idx = curr->fd_idx; idx< FDT_COUNT_LIMIT; idx++){
+	// 	if (fdt[idx] == NULL){
+	// 		fdt[idx] = file;
+	// 		curr->fd_idx = idx;
+	// 		return curr->fd_idx;
+	// 	}
+	// }
+	// curr->fd_idx = FDT_COUNT_LIMIT;
+	// return -1;
 }
 
 struct file* find_file_by_fd(int fd){
-	//fd -=2;
-	if(fd >64 || fd <3)
-		exit(-1);
-	struct thread *curr = thread_current();
-	return curr->fdt[fd];
+	// struct thread *curr = thread_current();
+	// struct file **fdt = curr->fdt;
+	// if(fd >128 || fd <3)
+	// 	exit(-1);
+	// return curr->fdt[fd];
+	struct thread*curr = thread_current();
+	struct file**fdt = curr->fdt;
+	if(fd < 2 || fd >= FDT_COUNT_LIMIT)
+		return NULL;
+	
+	return fdt[fd];
 }
 
 void del_fd(int fd){
-	//fd -= 2;
-	struct thread *curr = thread_current();
+	// struct thread *curr = thread_current();
+	// struct file **fdt = curr->fdt;
 
-	if(fd == curr->fd_idx-1)
+	// if(fd == curr->fd_idx-1)
+	// {
+	// 	curr->fdt[fd] = NULL;
+	// 	curr->fd_idx --;
+	// }else{
+	// 	for(int i = fd; i < curr->fd_idx ; i++){
+	// 		curr->fdt[i] = curr->fdt[i+1];
+	// 	}
+	// 	curr->fd_idx --;
+	// }
+	struct thread*curr = thread_current();
+	struct file**fdt = curr->fdt;
+	if(fd < 2 || fd >= FDT_COUNT_LIMIT)
 	{
-		curr->fdt[fd] = NULL;
-		curr->fd_idx --;
-	}else{
-		for(int i = fd; i < curr->fd_idx ; i++){
-			curr->fdt[i] = curr->fdt[i+1];
-		}
-		curr->fd_idx --;
-	}	 
+		return NULL;
+	}
+	fdt[fd] = NULL;	 
 }
 bool create (const char *file, unsigned initial_size){
 	if(!check_addr(file)){
 			exit(-1);
 		}
 	lock_acquire(&filesys_lock);
-	if(strlen(file) >= 511)
-		return 0;
+	// if(strlen(file) >= 511)
+	// 	return 0;
 	bool success = filesys_create(file,initial_size);
 	lock_release(&filesys_lock);
 	return success;
@@ -221,30 +260,42 @@ bool create (const char *file, unsigned initial_size){
 // 	return success;
 // 	}
 bool remove (const char *file){
-	lock_acquire(&filesys_lock);
+	if(!check_addr(file))
+			exit(-1);
+	//lock_acquire(&filesys_lock);
 	bool success = filesys_remove(file);
-	lock_release(&filesys_lock);
+	//lock_release(&filesys_lock);
 	return success;
 }
 
 int open (const char *file){
 	if(!check_addr(file))
 			exit(-1);
-	// if(file == NULL){
-	// 	exit(-1);
+	// // if(file == NULL){
+	// // 	exit(-1);
+	// // }
+	// lock_acquire(&filesys_lock);
+	// if(strcmp(file,"")== 0){
+	// 	return -1;
 	// }
-	lock_acquire(&filesys_lock);
-	if(strcmp(file,"")== 0){
+	// struct file *open_file = filesys_open(file);
+	// lock_release(&filesys_lock);
+	// if(open_file == NULL){
+	// 	return -1;
+	// }else {
+	// 	int fd = create_fd(open_file);
+	// 	return fd;
+	// }
+	struct file *f = filesys_open(file);
+
+	if (f == NULL)
 		return -1;
-	}
-	struct file *open_file = filesys_open(file);
-	lock_release(&filesys_lock);
-	if(open_file == NULL){
-		return -1;
-	}else {
-		int fd = create_fd(open_file);
-		return fd;
-	}
+
+	int fd = create_fd(f);
+	if (fd == -1)
+		file_close(f);
+
+	return fd;
 }
 // /* returns fd*/
 // int open (const char *file){
@@ -273,52 +324,66 @@ int read (int fd, void *buffer, unsigned length){
 	if(!check_addr(buffer))
 			exit(-1);
 	char *ptr = (char *)buffer;
+	int bytes_read = 0;
 
 	if (fd == 0){
-			lock_acquire(&filesys_lock);
-		for (int bytes_read = 0; bytes_read<length; bytes_read++){
+		for (int i = 0; i < length; i++){
 			char ch = input_getc();
 			if (ch == '\n'){
 				break;
 			*ptr = ch;
             ptr++;
+			bytes_read++;
 			}
-			lock_release(&filesys_lock);
-			return bytes_read;
 		}
 	}
-	struct file *file = find_file_by_fd(fd);
-	lock_acquire(&filesys_lock);
-	if (file == NULL){
-		return -1;
-	}
-	int bytes_read = file_read(file,buffer,length);
-	lock_release(&filesys_lock);
+	else{
+		if (fd < 2)
+				return -1;
+		struct file *file = find_file_by_fd(fd);
+		if (file == NULL){
+			return -1;
+		}
+		lock_acquire(&filesys_lock);
+		bytes_read = file_read(file,buffer,length);
+		lock_release(&filesys_lock);
+}
 	return bytes_read;
 }
 
 // /* STDIN:0 STDOUT:1*/
 int write (int fd, const void *buffer, unsigned length){
-	if (fd == 1) 
+	if(check_addr(buffer) == 0)
+		exit(-1);
+	int bytes_written = 0;
+	if (fd == 1){
+		//lock_acquire(&filesys_lock);
 		putbuf(buffer,length);
+		//lock_release(&filesys_lock);
+		bytes_written = length;
+	}
 	else
 	{
-		if(check_addr(buffer) == 0)
-			exit(-1);
+		if (fd < 2)
+			return -1;
 		struct file *file = find_file_by_fd(fd);
+		if (file == NULL)
+			return -1;
 		lock_acquire(&filesys_lock);
-		int bytes_written = file_write(file,buffer,length);
+		bytes_written = file_write(file,buffer,length);
 		lock_release(&filesys_lock);
-		return bytes_written;
 	}
+	return bytes_written;
 }
 
 
 /*파일 편집 위치 변경*/
 void seek (int fd, unsigned position){
+	if (fd < 2)
+		return -1;
 	struct file *file = find_file_by_fd(fd);
-	if(!check_addr(file))
-		exit(-1);
+	// if(!check_addr(file))
+	// 	exit(-1);
 	if (file == NULL) {
 	 	return;
 	}
@@ -327,9 +392,11 @@ void seek (int fd, unsigned position){
 
 /*파일 위치 반환*/
 unsigned tell (int fd){
+	if (fd < 2)
+		return;
 	struct file *file = find_file_by_fd(fd);
-	if(!check_addr(file))
-		exit(-1);
+	// if(!check_addr(file))
+	// 	exit(-1);
 	if (file == NULL) {
 	 	return;
 	}
@@ -339,6 +406,8 @@ unsigned tell (int fd){
 
 /* set 0 at file descriptor entry at index fd */
 void close (int fd){
+	if (fd < 2)
+		return;
 	struct file *file = find_file_by_fd(fd);
 	if(file == NULL)
 		return;

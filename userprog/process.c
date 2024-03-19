@@ -135,7 +135,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	 *    permission. */
 	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
 		/* 6. TODO: if fail to insert page, do error handling. */
-		//palloc_free_page(newpage);
+		palloc_free_page(newpage);
 		return false;
 	}
 	return true;
@@ -179,11 +179,21 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
-	for(int i=3; i<parent->fd_idx; i++){
-		struct file *new_file =file_duplicate(parent->fdt[i]);
-		current->fdt[i] = new_file;
-		}
-			
+	// if (parent->fd_idx == FDT_COUNT_LIMIT)
+	// 	goto error;
+	// for(int i=2; i<parent->fd_idx; i++){
+	// 	struct file *new_file =file_duplicate(parent->fdt[i]);
+	// 	current->fdt[i] = new_file;
+	// 	}
+	for(int i = 0; i < FDT_COUNT_LIMIT; i++)
+	{
+		struct file *file = parent->fdt[i];
+		if(file==NULL)
+			continue;
+		if(file > 2)
+			file = file_duplicate(file);
+		current->fdt[i] = file;
+	}
 	current->fd_idx = parent->fd_idx;
 	sema_up(&current->child_load_sema);
 	process_init ();
@@ -223,10 +233,17 @@ process_exec (void *f_name) {
 	token = strtok_r(fn_copy," ",&save_ptrr);
 
 	/* And then load the binary */
+	lock_acquire(&filesys_lock);
 	success = load (token, &_if);
-
 	palloc_free_page(fn_copy);
+	lock_release(&filesys_lock);
 
+	/* If load failed, quit. */
+	if (!success)
+	{
+		palloc_free_page(file_name);
+		return -1;
+	}
 	//argument_passing(f_name);
 	int arg_cnt=1;
 	char *save_ptr;
@@ -282,8 +299,8 @@ process_exec (void *f_name) {
 
 	/* If load failed, quit. */
 	palloc_free_page (file_name);
-	if (!success)
-		return -1;
+	// if (!success)
+	// 	return -1;
 
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
 	/* Start switched process. */
@@ -339,10 +356,11 @@ process_exit (void) {
 	 * TODO: We recommend you to implement process resource cleanup here. */
 	//printf("%s: exit(%d)\n" , curr -> name , curr->status);
 	int i;
- 	for(i=3;i<64;i++){
-    //del_fd(i);
-	close(i);
+ 	for(i=2;i<FDT_COUNT_LIMIT;i++){
+    if (curr->fdt[i] != NULL)
+			close(i);
   }
+	palloc_free_page(curr->fdt);
 	file_close(curr->exec_file);
 	process_cleanup ();
 	sema_up(&thread_current()->wait_sema); //자식이 종료 될때까지 대기하고 있는 부모에게 signal을 보낸다.
@@ -484,9 +502,7 @@ load (const char *file_name, struct intr_frame *if_) {
 		goto done;
 	}
 	// palloc_free_page(fn_copy);
-	/* file_deny_write*/
-	t->exec_file=file;
-    file_deny_write(file);
+	
 
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
@@ -552,6 +568,9 @@ load (const char *file_name, struct intr_frame *if_) {
 				break;
 		}
 	}
+	/* file_deny_write*/
+	t->exec_file=file;
+    file_deny_write(file);
 
 	/* Set up stack. */
 	if (!setup_stack (if_))
