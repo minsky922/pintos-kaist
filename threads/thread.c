@@ -272,6 +272,9 @@ thread_create (const char *name, int priority,
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
 
+	t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); 
+	// printf("[DBG] {%s} palloc result : %p\n", t->name, t->fdt); ////
+
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
 	t->tf.rip = (uintptr_t) kernel_thread;
@@ -298,7 +301,8 @@ thread_create (const char *name, int priority,
 	 Yield the CPU if the newly arriving thread has higher priority*/
 	thread_preemption();
 
-	t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); 
+	// t->fdt = palloc_get_multiple(PAL_ZERO, FDT_PAGES); 
+	// printf("[DBG] {%s} palloc result : %p\n", t->name, t->fdt); ////
     if (t->fdt == NULL) 
         return TID_ERROR; 
 	

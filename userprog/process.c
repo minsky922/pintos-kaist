@@ -360,16 +360,28 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-	//printf("%s: exit(%d)\n" , curr -> name , curr->status);
+	// printf("%s: exit(%d)\n" , curr -> name , curr->status);
+	//printf("process_exit\n");
+
+	// printf("PEXIT(): 1\n"); ///
+
+	// printf("fdt at %p\n", curr->fdt);
+	// printf("fdt[0] %p\n", curr->fdt[0]);
 	int i;
  	for(i=2;i<FDT_COUNT_LIMIT;i++){
+		// printf("close iter: %d, curr->fdt[%d] = %p\n", i, i, curr->fdt[i]);
     if (curr->fdt[i] != NULL)
 			close(i);
   }
+//   printf("PEXIT(): 2\n"); ///
 	palloc_free_page(curr->fdt);
+	// printf("PEXIT(): 3\n"); ///
 	file_close(curr->exec_file);
+	// printf("PEXIT(): 4\n"); ///
 	process_cleanup ();
+	// printf("PEXIT(): 5\n"); ///
 	sema_up(&curr->wait_sema); //자식이 종료 될때까지 대기하고 있는 부모에게 signal을 보낸다.
+	// printf("PEXIT(): 6\n"); ///
 	sema_down(&curr->exit_sema); //자식 프로세스가 부모 프로세스로부터 완전히 종료되기 위한 "허가"를 받을 때까지 자식 프로세스를 대기 상태로 만듬.
 }
 

@@ -124,11 +124,13 @@ void exit (int status)
     /* Save exit status at process descriptor */
 	cur->exit_status = status;
     printf("%s: exit(%d)\n" , cur -> name , status);
+	//printf("syscall_exit\n");
     thread_exit();
 }
 
 pid_t fork (const char *thread_name, const struct intr_frame *f){
 	struct thread *curr = thread_current ();
+	// printf("[DBG] fork() {%s} try to fork {%s}\n", curr->name, thread_name); //
 	return process_fork(thread_name, f);
 }
 
