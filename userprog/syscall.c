@@ -193,7 +193,6 @@ int create_fd(struct file *file){
 	// 		return curr->fd_idx;
 	// 	}
 	// }
-	// curr->fd_idx = FDT_COUNT_LIMIT;
 	// return -1;
 }
 

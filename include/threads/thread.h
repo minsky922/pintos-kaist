@@ -198,8 +198,9 @@ void recalculate_priority(void);
 void recalculate_recent_cpu(void);
 
 
-#define FDT_PAGES 2
-#define FDT_COUNT_LIMIT 128
+#define FDT_PAGES 3
+#define FDT_COUNT_LIMIT FDT_PAGES *(1 << 9)
 
 #endif /* threads/thread.h */
+
 

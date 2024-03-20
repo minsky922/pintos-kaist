@@ -71,8 +71,9 @@ initd (void *f_name) {
 
 	process_init ();
 
-	if (process_exec (f_name) < 0)
+	if (process_exec (f_name) < 0){
 		PANIC("Fail to launch initd\n");
+	}
 	NOT_REACHED ();
 }
 
@@ -97,7 +98,8 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	}
 	struct thread *t = find_child(tid);
 	sema_down(&t->child_load_sema);
-	if (t->exit_status == TID_ERROR){
+	if (t->exit_status == -1){
+		//sema_up(&t->exit_sema);
 		return TID_ERROR;
 	}
 	return tid;
@@ -179,12 +181,16 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
-	// if (parent->fd_idx == FDT_COUNT_LIMIT)
-	// 	goto error;
+	
 	// for(int i=2; i<parent->fd_idx; i++){
 	// 	struct file *new_file =file_duplicate(parent->fdt[i]);
 	// 	current->fdt[i] = new_file;
 	// 	}
+
+	if (parent->fd_idx == FDT_COUNT_LIMIT){
+		goto error;
+	}
+	
 	for(int i = 0; i < FDT_COUNT_LIMIT; i++)
 	{
 		struct file *file = parent->fdt[i];
@@ -203,7 +209,7 @@ __do_fork (void *aux) {
 		do_iret (&if_);
 error:
 	sema_up(&current->child_load_sema);
-	exit(TID_ERROR);
+	exit(-1);
 }
 
 /* Switch the current execution context to the f_name.
@@ -363,8 +369,8 @@ process_exit (void) {
 	palloc_free_page(curr->fdt);
 	file_close(curr->exec_file);
 	process_cleanup ();
-	sema_up(&thread_current()->wait_sema); //자식이 종료 될때까지 대기하고 있는 부모에게 signal을 보낸다.
-	sema_down(&thread_current()->exit_sema); //자식 프로세스가 부모 프로세스로부터 완전히 종료되기 위한 "허가"를 받을 때까지 자식 프로세스를 대기 상태로 만듬.
+	sema_up(&curr->wait_sema); //자식이 종료 될때까지 대기하고 있는 부모에게 signal을 보낸다.
+	sema_down(&curr->exit_sema); //자식 프로세스가 부모 프로세스로부터 완전히 종료되기 위한 "허가"를 받을 때까지 자식 프로세스를 대기 상태로 만듬.
 }
 
 /* Free the current process's resources. */
@@ -495,7 +501,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	// printf("2.%s\n",token);
 
 	/* Open executable file. */
+	
 	file = filesys_open (file_name);
+	
 	// printf("###########%p\n",file);
 	if (file == NULL) {
 		printf ("load: %s: open failed\n", file_name);
