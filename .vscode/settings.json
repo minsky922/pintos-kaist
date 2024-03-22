@@ -23,6 +23,9 @@
         "process.h": "c",
         "vaddr.h": "c",
         "palloc.h": "c",
-        "mmu.h": "c"
+        "mmu.h": "c",
+        "uninit.h": "c",
+        "anon.h": "c",
+        "hash.h": "c"
     }
 }
