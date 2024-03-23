@@ -63,6 +63,9 @@ bool check_addr(char* addr){
 /* The main system call interface */
 void
 syscall_handler (struct intr_frame *f UNUSED) {
+	#ifdef VM
+    thread_current()->rsp = f->rsp; // 추가
+	#endif
 	// TODO: Your implementation goes here.
 	switch(f->R.rax){
 		case SYS_HALT:

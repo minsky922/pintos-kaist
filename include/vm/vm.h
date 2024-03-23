@@ -17,8 +17,8 @@ enum vm_type {
 
 	/* Auxillary bit flag marker for store information. You can add more
 	 * markers, until the value is fit in the int. */
-	VM_MARKER_0 = (1 << 3),
-	VM_MARKER_1 = (1 << 4),
+	VM_MARKER_0 = (1 << 3), // 8
+	VM_MARKER_1 = (1 << 4), // 16
 
 	/* DO NOT EXCEED THIS VALUE. */
 	VM_MARKER_END = (1 << 31),
@@ -46,10 +46,10 @@ struct page {
 	struct frame *frame;   /* Back reference for frame */
 
 	/* Your implementation */
-	struct hash_elem hash_elem; /* Hash table element */
-	void *addr; /* virtual address */
+	struct hash_elem hash_elem; /* Hash table element */ /* key = page->va, value = struct page */
+	// void *addr; /* virtual address */
 	/* ... other members */
-
+	bool writable;
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
 	union {
@@ -66,6 +66,7 @@ struct page {
 struct frame {
 	void *kva;
 	struct page *page;
+	struct list_elem frame_elem;
 };
 
 /* The function table for page operations.
