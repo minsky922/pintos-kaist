@@ -757,12 +757,44 @@ install_page (void *upage, void *kpage, bool writable) {
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
-
+struct lazy_load_info
+{
+    struct file *file;
+    off_t offset;
+    uint32_t read_bytes;
+    uint32_t zero_bytes;
+	bool writable;
+};
+/* 당신은 load_segment 함수 내부의 vm_alloc_page_with_initialize의 네 번째 인자가 lazy_load_segment 라는 것을 알아차렸을 것입니다.
+ 이 함수는 실행 가능한 파일의 페이지들을 초기화하는 함수이고 
+page fault가 발생할 때 호출됩니다. 이 함수는 페이지 구조체와 aux를 인자로 받습니다.
+ aux는 load_segment에서 당신이 설정하는 정보입니다. 
+ 이 정보를 사용하여 당신은 세그먼트를 읽을 파일을 찾고 최종적으로는 세그먼트를 메모리에서 읽어야 합니다.*/
 static bool
 lazy_load_segment (struct page *page, void *aux) {
-	/* TODO: Load the segment from the file */
-	/* TODO: This called when the first page fault occurs on address VA. */
-	/* TODO: VA is available when calling this function. */
+    /* TODO: Load the segment from the file */
+    /* TODO: This called when the first page fault occurs on address VA. */
+    /* TODO: VA is available when calling this function. */
+	struct frame *frame = page->frame;
+    struct lazy_load_info *lazy_load_info = (struct lazy_load_info*) aux;
+    
+    struct file *file = lazy_load_info->file;
+    size_t page_read_bytes = lazy_load_info->read_bytes;
+    size_t page_zero_bytes = lazy_load_info->zero_bytes;
+    bool writable = lazy_load_info->writable;
+    off_t offset = lazy_load_info->offset;
+
+	// 파일의 position을 offset으로 지정한다.
+    file_seek(file, offset);
+	// 파일을 read_bytes만큼 물리 프레임에 읽어 들인다
+    if (file_read(file, frame->kva, page_read_bytes) != (int)page_read_bytes)
+    {
+        return false;
+    }
+	// 다 읽은 지점부터 zero_bytes만큼 0으로 채운다
+    memset(frame->kva + page_read_bytes, 0, page_zero_bytes);
+
+    return true;
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -779,6 +811,19 @@ lazy_load_segment (struct page *page, void *aux) {
  *
  * Return true if successful, false if a memory allocation error
  * or disk read error occurs. */
+
+/* 루프를 돌 때마다 load_segment는 대기 중인 페이지 오브젝트를 생성하는vm_alloc_page_with_initializer를 호출합니다. Page Fault가 발생하는 순간은 Segment가 실제로 파일에서 로드될 때 입니다*/
+
+/* 현재 코드는 메인 루프 안에서 파일로부터 읽을 바이트의 수와 0으로 채워야 할 바이트의 수를 측정합니다. 그리고 그것은 대기 중인 오브젝트를 생성하는 vm_alloc_page_with_initializer함수를 호출합니다.
+ 당신은 vm_alloc_page_with_initializer에 제공할 aux 인자로써 보조 값들을 설정할 필요가 있습니다.
+  당신은 바이너리 파일을 로드할 때 필수적인 정보를 포함하는 구조체를 생성하는 것이 좋습니다.*/
+
+// struct file *file:  데이터를 읽어올 파일을 가리키는 포인터
+// off_t ofs: 파일 내에서 데이터를 읽기 시작할 위치(offset)
+// uint8_t *upage: 가상 메모리 내에서 데이터를 로드할 시작 주소
+// uint32_t read_bytes: 파일에서 읽어야 할 바이트 수
+// uint32_t zero_bytes: 0으로 채워야 할 바이트 수
+// bool writable: 페이지가 쓰기 가능해야 하는지를 나타내는 플래그
 static bool
 load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		uint32_t read_bytes, uint32_t zero_bytes, bool writable) {
@@ -790,22 +835,37 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
 		 * and zero the final PAGE_ZERO_BYTES bytes. */
+		/* PAGE_READ_BYTES 만큼 읽고 나머지 PAGE_ZERO_BYTES 만큼 0으로 채움*/
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-		void *aux = NULL;
+		struct lazy_load_info* lazy_load_info = (struct lazy_load_info *)malloc(sizeof(struct lazy_load_info));
+        
+        lazy_load_info->file = file;
+        lazy_load_info->read_bytes = page_read_bytes;
+		lazy_load_info->zero_bytes = page_zero_bytes;
+        lazy_load_info->writable = writable;
+        lazy_load_info->offset = ofs;
+
+
+		//void *aux = NULL;
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, aux))
+					writable, lazy_load_segment, lazy_load_info))
 			return false;
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+		ofs += page_read_bytes;
 	}
 	return true;
 }
+/* 당신은 스택 할당 부분이  새로운 메모리 관리 시스템에 적합할 수 있도록 userprog/process.c에 있는 setup_stack 을 수정해야 합니다.
+ 첫 스택 페이지는 지연적으로 할당될 필요가 없습니다. 
+ 당신은 페이지 폴트가 발생하는 것을 기다릴 필요 없이 그것(스택 페이지)을 load time 때 커맨드 라인의 인자들과 함께 할당하고 초기화 할 수 있습니다.
+  당신은 스택을 확인하는 방법을 제공해야 합니다. 당신은 vm/vm.h의 vm_type에 있는 보조 marker(예 - VM_MARKER_0)들을 페이지를 마킹하는데 사용할 수 있습니다.*/
 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
 static bool
@@ -817,7 +877,15 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: If success, set the rsp accordingly.
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
-
+	if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1))
+	// writable: argument_stack()에서 값을 넣어야 하니 True
+	{
+		// 2) 할당 받은 페이지에 바로 물리 프레임을 매핑한다.
+		success = vm_claim_page(stack_bottom);
+		if (success)
+			// 3) rsp를 변경한다. (argument_stack에서 이 위치부터 인자를 push한다.)
+			if_->rsp = USER_STACK;
+	}
 	return success;
 }
 #endif /* VM */

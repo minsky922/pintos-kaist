@@ -3,8 +3,9 @@
 #include "threads/malloc.h"
 #include "vm/vm.h"
 #include "vm/inspect.h"
-#include "lib/kernel/hash.h"
 #include "threads/mmu.h"
+#include "threads/thread.h"
+#include "userprog/process.h"
 
 struct list frame_table;
 
@@ -49,6 +50,7 @@ vm_init (void) {
 	register_inspect_intr ();
 	/* DO NOT MODIFY UPPER LINES. */
 	/* TODO: Your code goes here. */
+	list_init(&frame_table);	
 }
 
 /* Get the type of the page. This function is useful if you want to know the
@@ -86,8 +88,25 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		/* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
-
+		struct page *page = (struct page *)malloc(sizeof(struct page));
 		/* TODO: Insert the page into the spt. */
+		/* Initiate the struct page and maps the pa to the va */
+		bool (*initializer) (struct page *, enum vm_type, void *);
+
+		switch (VM_TYPE(type))
+        {
+        case VM_ANON:
+            initializer = anon_initializer;
+            break;
+        case VM_FILE:
+            initializer = file_backed_initializer;
+            break;
+        }
+		uninit_new(page, upage, init, type, aux, initializer);
+
+		page->writable = writable;
+
+		return spt_insert_page(spt, page);
 	}
 err:
 	return false;
@@ -98,7 +117,8 @@ struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	struct page *page;
 	/* TODO: Fill this function. */
-	//page = (struct page *)malloc(sizeof(struct page)); malloc은 힙영역에 할당 지금 방식은 지역변수 (스택)-> 함수 끝나면 할당 자동해제
+	// malloc은 힙영역에 할당 지금 방식은 지역변수 (스택)-> 함수 끝나면 할당 자동해제
+	//page = (struct page *)malloc(sizeof(struct page)); 
 	struct hash_elem *e;
 	
 	page->va = pg_round_down(va); 
@@ -115,7 +135,7 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 		struct page *page UNUSED) {
 	// int succ = false;
 	/* TODO: Fill this function. */
-	if (hash_insert (&spt, &page->hash_elem) == NULL){
+	if (hash_insert (&spt->spt_hash, &page->hash_elem) == NULL){
 		return true;
 	}
 	return false;
@@ -173,14 +193,15 @@ vm_get_frame (void) {
 	/* TODO: Fill this function. */
 	void *kva = palloc_get_page(PAL_USER);
 	/* todo : swap_out 처리 */
-	if (kva == NULL){   
+	if (kva == NULL){   // palloc_get 실패하면 ram에 공간이 부족하다는 거니까 disk에서 swap_out 처리
     	PANIC("todo");
 	}
-	frame = malloc(sizeof(struct frame)); 
+	frame = malloc(sizeof(struct frame)); // vm_do_claim_page에 넘어갈때 사라지면 안되니까 지역 변수 x, malloc으로 // malloc을 못하면 kernal 공간부족 그냥 끝
+	// struct frame *frame; 
     frame->kva = kva;
-	frame->page = NULL;
+	frame->page = NULL; // null로 초기화 함으로써 어떤 페이지와도 연결되지 않았음을 명확히 함
 
-	list_push_back(&frame_table, &frame->frame_elem);
+	list_push_back(&frame_table, &frame->frame_elem); // frame_elem으로 frame 구조체에 접근할수잇음
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
 	return frame;
@@ -217,10 +238,10 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	}
 	if (not_present) // physical page 존재 x
 	{
-		void *rsp = f->rsp; // 유저 스택
-		if (!user) // kernel access인 경우 thread에서 rsp를 가져와야 한다.
-			rsp = thread_current()->rsp;
-	
+		// void *rsp = f->rsp; // 유저 스택
+		// if (!user) // kernel access인 경우 thread에서 rsp를 가져와야 한다.
+		// 	rsp = thread_current()->rsp;
+	 
 
 		/* todo : stack growth */
 
@@ -273,9 +294,9 @@ vm_claim_page (void *va UNUSED) {
 	struct page *page = NULL;
 	/* TODO: Fill this function */
 	page = spt_find_page(&thread_current()->spt, va);
-	if (page == NULL){
+	if (page == NULL)
 		return false;
-	}
+	
 	return vm_do_claim_page (page);
 }
 

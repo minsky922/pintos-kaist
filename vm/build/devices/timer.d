@@ -6,7 +6,9 @@ devices/timer.o: ../../devices/timer.c ../../include/devices/timer.h \
  ../../include/lib/kernel/stdio.h ../../include/threads/interrupt.h \
  ../../include/threads/io.h ../../include/threads/synch.h \
  ../../include/lib/kernel/list.h ../../include/threads/thread.h \
+ ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/vm/vm.h ../../include/threads/palloc.h \
- ../../include/vm/uninit.h ../../include/vm/anon.h \
- ../../include/vm/file.h ../../include/filesys/file.h \
- ../../include/filesys/off_t.h ../../include/threads/fixed-point.h
+ ../../include/lib/kernel/hash.h ../../include/vm/uninit.h \
+ ../../include/vm/anon.h ../../include/vm/file.h \
+ ../../include/filesys/file.h ../../include/filesys/off_t.h \
+ ../../include/threads/fixed-point.h

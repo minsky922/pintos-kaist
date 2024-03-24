@@ -1,7 +1,12 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
-Translation of call stack:
-0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (open-normal) begin
+  (open-normal) end
+  open-normal: exit(0)
+Differences in `diff -u' format:
+  (open-normal) begin
+  (open-normal) end
+- open-normal: exit(0)
++ : exit(0)
