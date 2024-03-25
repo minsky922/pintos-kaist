@@ -18,15 +18,15 @@ Executing 'args-none':
 (args) argv[0] = 'args-none'
 (args) argv[1] = null
 (args) end
-: exit(0)
+args-none: exit(0)
 Execution of 'args-none' complete.
-Timer: 65 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 3 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 232 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 995 characters output
+Console: 1004 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

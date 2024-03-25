@@ -1,7 +1,27 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
-Translation of call stack:
-0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (multi-child-fd) begin
+  (multi-child-fd) open "sample.txt"
+  (child-close) begin
+  (child-close) verified contents of "sample.txt"
+  (child-close) end
+  child-close: exit(0)
+  (multi-child-fd) wait(exec()) = 0
+  (multi-child-fd) verified contents of "sample.txt"
+  (multi-child-fd) end
+  multi-child-fd: exit(0)
+Differences in `diff -u' format:
+  (multi-child-fd) begin
+  (multi-child-fd) open "sample.txt"
+- (child-close) begin
+- (child-close) verified contents of "sample.txt"
+- (child-close) end
+- child-close: exit(0)
+- (multi-child-fd) wait(exec()) = 0
++ child-close: exit(-1)
++ (multi-child-fd) wait(exec()) = -1
+  (multi-child-fd) verified contents of "sample.txt"
+  (multi-child-fd) end
+  multi-child-fd: exit(0)

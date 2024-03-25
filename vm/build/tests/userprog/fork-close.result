@@ -1,7 +1,23 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
-Translation of call stack:
-0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (fork-close) begin
+  (fork-close) open "sample.txt"
+  (fork-close) child run
+  (fork-close) end
+  child: exit(0)
+  (fork-close) Parent success
+  (fork-close) end
+  fork-close: exit(0)
+Differences in `diff -u' format:
+  (fork-close) begin
+  (fork-close) open "sample.txt"
+- (fork-close) child run
+- (fork-close) end
+- child: exit(0)
+- (fork-close) Parent success
+- (fork-close) end
+- fork-close: exit(0)
++ child: exit(-1)
++ fork-close: exit(-1)

@@ -22,15 +22,15 @@ Executing 'args-multiple some arguments for you!':
 (args) argv[4] = 'you!'
 (args) argv[5] = null
 (args) end
-: exit(0)
+args-multiple: exit(0)
 Execution of 'args-multiple' complete.
-Timer: 65 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 4 user ticks
+Timer: 66 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 232 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1169 characters output
+Console: 1182 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -1,7 +1,13 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
+Kernel panic in run: PANIC at ../../vm/vm.c:197 in vm_get_frame(): todo
+Call stack: 0x8004218427 0x8004221407 0x8004221767 0x8004221697 0x800421d2bd 0x80042091ff 0x800420961d 0x400e2e 0x400e77
 Translation of call stack:
 0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+0x0000008004221407: vm_get_frame (vm/vm.c:199)
+0x0000008004221767: vm_do_claim_page (vm/vm.c:309)
+0x0000008004221697: vm_try_handle_fault (vm/vm.c:258)
+0x000000800421d2bd: page_fault (userprog/exception.c:146)
+0x00000080042091ff: intr_handler (threads/interrupt.c:352)
+0x000000800420961d: intr_entry (threads/intr-stubs.o:?)
+0x0000000000400e2e: (unknown)
+0x0000000000400e77: (unknown)

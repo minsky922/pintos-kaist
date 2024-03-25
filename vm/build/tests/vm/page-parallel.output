@@ -14,17 +14,22 @@ Boot complete.
 Putting 'page-parallel' into the file system...
 Putting 'child-linear' into the file system...
 Executing 'page-parallel':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 65 ticks
-Thread: 30 idle ticks, 34 kernel ticks, 1 user ticks
+(page-parallel) begin
+child-linear: exit(-1)
+child-linear: exit(-1)
+child-linear: exit(-1)
+child-linear: exit(-1)
+(page-parallel) wait for child 0
+(page-parallel) wait for child 0: FAILED
+page-parallel: exit(1)
+Execution of 'page-parallel' complete.
+Timer: 70 ticks
+Thread: 30 idle ticks, 35 kernel ticks, 5 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 66 reads, 456 writes
+hd0:1: 107 reads, 456 writes
 hd1:0: 209 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1224 characters output
-Key
+Console: 1191 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

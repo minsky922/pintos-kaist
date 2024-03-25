@@ -256,7 +256,6 @@ int open (const char *file){
 	int fd = create_fd(f);
 	if (fd == -1)
 		file_close(f);
-
 	return fd;
 }
 

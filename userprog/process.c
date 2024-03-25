@@ -843,10 +843,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		struct lazy_load_info* lazy_load_info = (struct lazy_load_info *)malloc(sizeof(struct lazy_load_info));
         
         lazy_load_info->file = file;
+        lazy_load_info->offset = ofs;
         lazy_load_info->read_bytes = page_read_bytes;
 		lazy_load_info->zero_bytes = page_zero_bytes;
         lazy_load_info->writable = writable;
-        lazy_load_info->offset = ofs;
 
 
 		//void *aux = NULL;

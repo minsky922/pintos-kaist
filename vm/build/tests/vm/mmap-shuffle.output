@@ -13,17 +13,19 @@ Formatting file system...done.
 Boot complete.
 Putting 'mmap-shuffle' into the file system...
 Executing 'mmap-shuffle':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 60 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 0 user ticks
+(mmap-shuffle) begin
+(mmap-shuffle) create "buffer"
+(mmap-shuffle) open "buffer"
+(mmap-shuffle) mmap "buffer"
+mmap-shuffle: exit(-1)
+Execution of 'mmap-shuffle' complete.
+Timer: 68 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 8 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 39 reads, 256 writes
+hd0:1: 112 reads, 524 writes
 hd1:0: 114 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1155 characters output
-Key
+Console: 1043 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

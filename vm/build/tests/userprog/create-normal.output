@@ -16,15 +16,15 @@ Executing 'create-normal':
 (create-normal) begin
 (create-normal) create quux.dat
 (create-normal) end
-: exit(0)
+create-normal: exit(0)
 Execution of 'create-normal' complete.
 Timer: 64 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 3 user ticks
+Thread: 30 idle ticks, 30 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 102 reads, 246 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 999 characters output
+Console: 1012 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

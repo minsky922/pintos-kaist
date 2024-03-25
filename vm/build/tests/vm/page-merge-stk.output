@@ -14,17 +14,35 @@ Boot complete.
 Putting 'page-merge-stk' into the file system...
 Putting 'child-qsort' into the file system...
 Executing 'page-merge-stk':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 64 ticks
-Thread: 30 idle ticks, 34 kernel ticks, 0 user ticks
+(page-merge-stk) begin
+(page-merge-stk) init
+(page-merge-stk) sort chunk 0
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 1
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 2
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 3
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 4
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 5
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 6
+child-qsort: exit(-1)
+(page-merge-stk) sort chunk 7
+child-qsort: exit(-1)
+(page-merge-stk) wait for child 0
+(page-merge-stk) wait for child 0: FAILED
+page-merge-stk: exit(1)
+Execution of 'page-merge-stk' complete.
+Timer: 135 ticks
+Thread: 30 idle ticks, 40 kernel ticks, 65 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 66 reads, 486 writes
+hd0:1: 391 reads, 4678 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1227 characters output
-Key
+Console: 1548 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

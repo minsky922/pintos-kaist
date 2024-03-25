@@ -1,7 +1,43 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
-Translation of call stack:
-0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (fork-multiple) begin
+  (fork-multiple) child run
+  child: exit(4)
+  (fork-multiple) Parent: child exit status is 4
+  (fork-multiple) child run
+  child: exit(5)
+  (fork-multiple) Parent: child exit status is 5
+  (fork-multiple) child run
+  child: exit(6)
+  (fork-multiple) Parent: child exit status is 6
+  (fork-multiple) child run
+  child: exit(7)
+  (fork-multiple) Parent: child exit status is 7
+  (fork-multiple) end
+  fork-multiple: exit(0)
+Differences in `diff -u' format:
+  (fork-multiple) begin
+- (fork-multiple) child run
+- child: exit(4)
+- (fork-multiple) Parent: child exit status is 4
+- (fork-multiple) child run
+- child: exit(5)
+- (fork-multiple) Parent: child exit status is 5
+- (fork-multiple) child run
+- child: exit(6)
+- (fork-multiple) Parent: child exit status is 6
+- (fork-multiple) child run
+- child: exit(7)
+- (fork-multiple) Parent: child exit status is 7
++ child: exit(-1)
++ (fork-multiple) Parent: child exit status is -1
++ child: exit(-1)
++ (fork-multiple) Parent: child exit status is -1
++ child: exit(-1)
++ (fork-multiple) Parent: child exit status is -1
++ child: exit(-1)
++ (fork-multiple) Parent: child exit status is -1
+  (fork-multiple) end
+  fork-multiple: exit(0)

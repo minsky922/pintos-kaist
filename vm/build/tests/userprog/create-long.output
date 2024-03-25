@@ -16,7 +16,7 @@ Executing 'create-long':
 (create-long) begin
 (create-long) create("x..."): 0
 (create-long) end
-: exit(0)
+create-long: exit(0)
 Execution of 'create-long' complete.
 Timer: 63 ticks
 Thread: 30 idle ticks, 30 kernel ticks, 3 user ticks
@@ -24,7 +24,7 @@ hd0:0: 0 reads, 0 writes
 hd0:1: 84 reads, 250 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 984 characters output
+Console: 995 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -1,7 +1,32 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
-Translation of call stack:
-0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (exec-read) begin
+  (exec-read) open "sample.txt"
+  (exec-read) read "sample.txt" first 20 bytes
+  (child-read) begin
+  (child-read) open "sample.txt"
+  (child-read) read "sample.txt" first 20 bytes
+  (child-read) read "sample.txt" remainders
+  (child-read) Child success
+  (child-read) end
+  child-read: exit(0)
+  (exec-read) Parent success
+  (exec-read) end
+  exec-read: exit(0)
+Differences in `diff -u' format:
+  (exec-read) begin
+  (exec-read) open "sample.txt"
+  (exec-read) read "sample.txt" first 20 bytes
+- (child-read) begin
+- (child-read) open "sample.txt"
+- (child-read) read "sample.txt" first 20 bytes
+- (child-read) read "sample.txt" remainders
+- (child-read) Child success
+- (child-read) end
+- child-read: exit(0)
+- (exec-read) Parent success
+- (exec-read) end
+- exec-read: exit(0)
++ exec-read: exit(-1)
