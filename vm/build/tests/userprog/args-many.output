@@ -46,22 +46,13 @@ Executing 'args-many a b c d e f g h i j k l m n o p q r s t u v':
 (args) end
 args-many: exit(0)
 Execution of 'args-many' complete.
-<<<<<<< HEAD
 Timer: 77 ticks
 Thread: 30 idle ticks, 36 kernel ticks, 11 user ticks
-=======
-Timer: 73 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 12 user ticks
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 232 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-<<<<<<< HEAD
 Console: 1571 characters output
-=======
-Console: 1572 characters output
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
