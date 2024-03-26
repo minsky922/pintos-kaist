@@ -19,6 +19,7 @@ Executing 'rox-multichild':
 (rox-multichild) read "child-rox"
 (rox-multichild) write "child-rox"
 (rox-multichild) exec "child-rox 5"
+<<<<<<< HEAD
 (child-rox) begin
 (child-rox) try to write "child-rox"
 (child-rox) exec "child-rox 4"
@@ -59,6 +60,19 @@ hd0:1: 420 reads, 480 writes
 hd1:0: 220 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1986 characters output
+=======
+child-rox: exit(-1)
+(rox-multichild) fork() returned -1: FAILED
+rox-multichild: exit(1)
+Execution of 'rox-multichild' complete.
+Timer: 69 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 5 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 114 reads, 479 writes
+hd1:0: 220 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1229 characters output
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

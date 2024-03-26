@@ -4,7 +4,11 @@ Kernel command line: -q -f put mmap-bad-off put large.txt run mmap-bad-off
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 Calibrating timer...  75,264,000 loops/s.
+=======
+Calibrating timer...  157,081,600 loops/s.
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 4,017 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -20,13 +24,22 @@ Executing 'mmap-bad-off':
 (mmap-bad-off) try to mmap invalid offset: FAILED
 mmap-bad-off: exit(1)
 Execution of 'mmap-bad-off' complete.
+<<<<<<< HEAD
 Timer: 158 ticks
 Thread: 30 idle ticks, 125 kernel ticks, 3 user ticks
+=======
+Timer: 153 ticks
+Thread: 30 idle ticks, 119 kernel ticks, 4 user ticks
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 8072 writes
 hd1:0: 4017 reads, 0 writes
 hd1:1: 0 reads, 0 writes
+<<<<<<< HEAD
 Console: 1139 characters output
+=======
+Console: 1140 characters output
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

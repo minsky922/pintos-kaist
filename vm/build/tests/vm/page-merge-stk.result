@@ -1,4 +1,5 @@
 FAIL
+<<<<<<< HEAD
 Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
 Call stack: 0x8004218427 0x800421d23f 0x80042091ff 0x800420961d 0x800420aa84 0x800421b6eb 0x800421b798 0x800421592a 0x80042093c2 0x800421d20a 0x80042091ff 0x800420961d 0x800420aa84 0x800420c553 0x8004220215 0x800421f2fb 0x800421c587 0x800420757a 0x800421d812 0x800421d598 0x800421d3de 0x400c7f 0x40048d 0x4007f7 0x400107 0x401504 0x40154d
 Translation of call stack:
@@ -29,3 +30,6 @@ Translation of call stack:
 0x0000000000400107: (unknown)
 0x0000000000401504: (unknown)
 0x000000000040154d: (unknown)
+=======
+run: wait for child 0: FAILED
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129

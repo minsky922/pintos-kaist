@@ -4,7 +4,11 @@ Kernel command line: -q -f put wait-simple put child-simple run wait-simple
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 Calibrating timer...  13,094,400 loops/s.
+=======
+Calibrating timer...  155,648,000 loops/s.
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 204 sector (102 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -15,6 +19,7 @@ Putting 'wait-simple' into the file system...
 Putting 'child-simple' into the file system...
 Executing 'wait-simple':
 (wait-simple) begin
+<<<<<<< HEAD
 (child-simple) run
 child-simple: exit(81)
 (wait-simple) wait(exec()) = 81
@@ -28,6 +33,20 @@ hd0:1: 159 reads, 446 writes
 hd1:0: 204 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1102 characters output
+=======
+child-simple: exit(-1)
+(wait-simple) wait(exec()) = -1
+(wait-simple) end
+wait-simple: exit(0)
+Execution of 'wait-simple' complete.
+Timer: 69 ticks
+Thread: 30 idle ticks, 36 kernel ticks, 3 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 107 reads, 446 writes
+hd1:0: 204 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1084 characters output
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

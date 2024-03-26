@@ -4,7 +4,11 @@ Kernel command line: -q -f put mmap-exit put child-mm-wrt run mmap-exit
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+<<<<<<< HEAD
 Calibrating timer...  50,739,200 loops/s.
+=======
+Calibrating timer...  157,081,600 loops/s.
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 210 sector (105 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -15,14 +19,18 @@ Putting 'mmap-exit' into the file system...
 Putting 'child-mm-wrt' into the file system...
 Executing 'mmap-exit':
 (mmap-exit) begin
+<<<<<<< HEAD
 (child-mm-wrt) begin
 (child-mm-wrt) create "sample.txt"
 (child-mm-wrt) open "sample.txt"
 (child-mm-wrt) mmap "sample.txt"
+=======
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 child-mm-wrt: exit(-1)
 (mmap-exit) wait for child (should return 0): FAILED
 mmap-exit: exit(1)
 Execution of 'mmap-exit' complete.
+<<<<<<< HEAD
 Timer: 71 ticks
 Thread: 30 idle ticks, 34 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
@@ -32,4 +40,15 @@ hd1:1: 0 reads, 0 writes
 Console: 1194 characters output
 Keyboard: 0 keys pressed
 Exception: 1 page faults
+=======
+Timer: 66 ticks
+Thread: 30 idle ticks, 33 kernel ticks, 3 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 108 reads, 458 writes
+hd1:0: 210 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1073 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Powering off...

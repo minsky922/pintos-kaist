@@ -20,13 +20,22 @@ Executing 'mmap-misalign':
 (mmap-misalign) try to mmap at misaligned address: FAILED
 mmap-misalign: exit(1)
 Execution of 'mmap-misalign' complete.
+<<<<<<< HEAD
 Timer: 65 ticks
 Thread: 30 idle ticks, 32 kernel ticks, 4 user ticks
+=======
+Timer: 64 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 4 user ticks
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
+<<<<<<< HEAD
 Console: 1161 characters output
+=======
+Console: 1162 characters output
+>>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
