@@ -5,7 +5,8 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/lib/stdio.h ../../include/lib/stdarg.h \
  ../../include/lib/kernel/stdio.h ../../include/lib/syscall-nr.h \
  ../../include/threads/thread.h ../../include/lib/kernel/list.h \
- ../../include/threads/synch.h ../../include/threads/loader.h \
+ ../../include/threads/synch.h ../../include/lib/kernel/hash.h \
+ ../../include/lib/kernel/list.h ../../include/threads/loader.h \
  ../../include/userprog/gdt.h ../../include/userprog/process.h \
  ../../include/threads/flags.h ../../include/intrinsic.h \
  ../../include/threads/mmu.h ../../include/threads/pte.h \
@@ -13,5 +14,5 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/filesys/off_t.h ../../include/filesys/filesys.h \
  ../../include/threads/palloc.h ../../include/devices/input.h \
  ../../include/lib/kernel/stdio.h ../../include/vm/vm.h \
- ../../include/vm/uninit.h ../../include/vm/anon.h \
- ../../include/vm/file.h
+ ../../include/lib/kernel/hash.h ../../include/vm/uninit.h \
+ ../../include/vm/anon.h ../../include/vm/file.h

@@ -344,11 +344,12 @@ process_wait (tid_t child_tid UNUSED) {
 		return -1;
 	}
 	sema_down(&t->wait_sema); //부모가 자식이 종료될때까지 대기 (process_exit에서 자식이 종료될때 sema_up)
-	list_remove(&t->child_elem); //자식이 종료됨을 알리는 'wait_signal'을 받으면 현재스레드(부모)의 자식리스트에서 제거
+	int result = t->exit_status;
 	sema_up(&t->exit_sema); // 부모 프로세스가 자식 프로세스의 종료 상태를 읽고, 자식 프로세스가 이제 완전히 종료될 수 있음을 알림.
+	list_remove(&t->child_elem); //자식이 종료됨을 알리는 'wait_signal'을 받으면 현재스레드(부모)의 자식리스트에서 제거
 	//timer_sleep(10);
 	
-	return t->exit_status;
+	return result;
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -366,6 +367,12 @@ process_exit (void) {
 
 	// printf("fdt at %p\n", curr->fdt);
 	// printf("fdt[0] %p\n", curr->fdt[0]); 
+
+	while(!list_empty(&curr->child_list)){
+		struct thread *child = list_entry(list_begin(&curr->child_list),struct thread, child_elem);
+		wait(child->tid);
+	}	
+
 	int i;
  	for(i=2;i<FDT_COUNT_LIMIT;i++){
 		// printf("close iter: %d, curr->fdt[%d] = %p\n", i, i, curr->fdt[i]);
@@ -789,6 +796,7 @@ lazy_load_segment (struct page *page, void *aux) {
 	// 파일을 read_bytes만큼 물리 프레임에 읽어 들인다
     if (file_read(file, frame->kva, page_read_bytes) != (int)page_read_bytes)
     {
+		palloc_free_page(frame->kva);
         return false;
     }
 	// 다 읽은 지점부터 zero_bytes만큼 0으로 채운다
@@ -843,10 +851,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		struct lazy_load_info* lazy_load_info = (struct lazy_load_info *)malloc(sizeof(struct lazy_load_info));
         
         lazy_load_info->file = file;
+        lazy_load_info->offset = ofs;
         lazy_load_info->read_bytes = page_read_bytes;
 		lazy_load_info->zero_bytes = page_zero_bytes;
         lazy_load_info->writable = writable;
-        lazy_load_info->offset = ofs;
 
 
 		//void *aux = NULL;

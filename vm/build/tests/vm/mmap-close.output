@@ -14,17 +14,18 @@ Boot complete.
 Putting 'mmap-close' into the file system...
 Putting 'sample.txt' into the file system...
 Executing 'mmap-close':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 61 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 0 user ticks
+(mmap-close) begin
+(mmap-close) open "sample.txt"
+(mmap-close) mmap "sample.txt"
+mmap-close: exit(-1)
+Execution of 'mmap-close' complete.
+Timer: 64 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 66 reads, 256 writes
+hd0:1: 120 reads, 256 writes
 hd1:0: 109 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1207 characters output
-Key
+Console: 1062 characters output
+Keyboard: 0 keys pressed
+Exception: 1 page faults
+Powering off...

@@ -13,17 +13,24 @@ Formatting file system...done.
 Boot complete.
 Putting 'lg-seq-random' into the file system...
 Executing 'lg-seq-random':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 60 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 0 user ticks
+(lg-seq-random) begin
+(lg-seq-random) create "nibble"
+(lg-seq-random) open "nibble"
+(lg-seq-random) writing "nibble"
+(lg-seq-random) close "nibble"
+(lg-seq-random) open "nibble" for verification
+(lg-seq-random) verified contents of "nibble"
+(lg-seq-random) close "nibble"
+(lg-seq-random) end
+lg-seq-random: exit(0)
+Execution of 'lg-seq-random' complete.
+Timer: 97 ticks
+Thread: 30 idle ticks, 43 kernel ticks, 24 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 39 reads, 242 writes
+hd0:1: 506 reads, 686 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1159 characters output
-Key
+Console: 1231 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

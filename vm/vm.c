@@ -115,14 +115,14 @@ err:
 /* Find VA from spt and return page. On error, return NULL. */
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
-	struct page *page;
+	struct page page;
 	/* TODO: Fill this function. */
 	// malloc은 힙영역에 할당 지금 방식은 지역변수 (스택)-> 함수 끝나면 할당 자동해제
 	//page = (struct page *)malloc(sizeof(struct page)); 
 	struct hash_elem *e;
 	
-	page->va = pg_round_down(va); 
-	e = hash_find(&spt->spt_hash, &page->hash_elem); // hash_elem 리턴 -> page 찾기 위해
+	page.va = pg_round_down(va); 
+	e = hash_find(&spt->spt_hash, &page.hash_elem); // hash_elem 리턴 -> page 찾기 위해
 	//free(page);
 
 	// page = page_lookup (spt, va);
@@ -238,12 +238,15 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	}
 	if (not_present) // physical page 존재 x
 	{
-		// void *rsp = f->rsp; // 유저 스택
-		// if (!user) // kernel access인 경우 thread에서 rsp를 가져와야 한다.
-		// 	rsp = thread_current()->rsp;
-	 
-
+		void *rsp = f->rsp; // 유저 스택
+		if (!user) // kernel access인 경우 thread에서 rsp를 가져와야 한다.
+		rsp = thread_current()->rsp;
 		/* todo : stack growth */
+		// 스택 확장으로 처리할 수 있는 폴트인 경우, vm_stack_growth를 호출한다.
+        if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 == addr && addr <= USER_STACK)
+            vm_stack_growth(addr);
+        else if (USER_STACK - (1 << 20) <= rsp && rsp <= addr && addr <= USER_STACK)
+            vm_stack_growth(addr);
 
 		page = spt_find_page(spt, addr);
 		if (page == NULL)
@@ -323,14 +326,52 @@ supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
 }
 
 /* Copy supplemental page table from src to dst */
+// &current->spt, &parent->spt
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
-		struct supplemental_page_table *src UNUSED) {	
+		struct supplemental_page_table *src UNUSED) {
+			struct hash_iterator i;
+			hash_first(&i, &src->spt_hash);
+			while (hash_next(&i)){
+				struct hash_elem *e = hash_cur(&i);
+				struct page *page = hash_entry(e, struct page, hash_elem);
+				void *upage = page->va;
+				bool writable = page->writable;
+				enum vm_type type = page->operations->type;
+				// void *aux = page->uninit.aux;
+				// vm_initializer *init = page->uninit.init;
+				
+				/* type이 uninit 이면*/
+				if (type == VM_UNINIT)
+       		 	{ // uninit page 생성 & 초기화
+            	vm_initializer *init = page->uninit.init;
+            	void *aux = page->uninit.aux;
+            	vm_alloc_page_with_initializer(VM_ANON, upage, writable, init, aux);
+            	continue;
+        		}
+
+				/* type이 uninit이 아니면*/
+				if (!vm_alloc_page(type, upage, writable))
+					return false;
+				if (!vm_claim_page(upage))
+					return false;
+				// hash_insert(&dst->spt_hash, &page->hash_elem);
+				struct page *dst_page = spt_find_page(dst,upage);
+				memcpy(dst_page->frame->kva, page->frame->kva, PGSIZE);
+			}
+			return true;
 }
 
+void clear_table(struct hash_elem *e, void *aux){
+	struct page *page = hash_entry(e, struct page, hash_elem);
+	destroy(page);
+	free(page);
+}
 /* Free the resource hold by the supplemental page table */
 void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+	// 해시 테이블을 재사용하려면 hash_clear를, 해시 테이블을 완전히 제거하려면 hash_destroy를
+	hash_clear(&spt->spt_hash, clear_table);
 }

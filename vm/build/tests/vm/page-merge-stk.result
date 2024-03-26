@@ -1,7 +1,31 @@
 FAIL
-Kernel panic in run: PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc
+Kernel panic in run: PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x8004218427 0x800421d23f 0x80042091ff 0x800420961d 0x800420aa84 0x800421b6eb 0x800421b798 0x800421592a 0x80042093c2 0x800421d20a 0x80042091ff 0x800420961d 0x800420aa84 0x800420c553 0x8004220215 0x800421f2fb 0x800421c587 0x800420757a 0x800421d812 0x800421d598 0x800421d3de 0x400c7f 0x40048d 0x4007f7 0x400107 0x401504 0x40154d
 Translation of call stack:
 0x0000008004218427: debug_panic (lib/kernel/debug.c:32)
-0x000000800421bae1: initd (userprog/process.c:77)
-0x00000080042079fc: kernel_thread (threads/thread.c:521)
+0x000000800421d23f: kill (userprog/exception.c:103)
+0x00000080042091ff: intr_handler (threads/interrupt.c:352)
+0x000000800420961d: intr_entry (threads/intr-stubs.o:?)
+0x000000800420aa84: lock_release (threads/synch.c:281)
+0x000000800421b6eb: release_console (lib/kernel/console.c:103)
+0x000000800421b798: vprintf (lib/kernel/console.c:125)
+0x000000800421592a: printf (lib/stdio.c:80)
+0x00000080042093c2: intr_dump_frame (threads/interrupt.c:387)
+0x000000800421d20a: kill (userprog/exception.c:97)
+0x00000080042091ff: intr_handler (threads/interrupt.c:352)
+0x000000800420961d: intr_entry (threads/intr-stubs.o:?)
+0x000000800420aa84: lock_release (threads/synch.c:281)
+0x000000800420c553: free (threads/malloc.c:233)
+0x0000008004220215: inode_close (filesys/inode.c:167)
+0x000000800421f2fb: file_close (filesys/file.c:57)
+0x000000800421c587: process_exit (userprog/process.c:387)
+0x000000800420757a: thread_exit (threads/thread.c:390)
+0x000000800421d812: fork (userprog/syscall.c:131)
+0x000000800421d598: syscall_handler (userprog/syscall.c:78)
+0x000000800421d3de: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400c7f: (unknown)
+0x000000000040048d: (unknown)
+0x00000000004007f7: (unknown)
+0x0000000000400107: (unknown)
+0x0000000000401504: (unknown)
+0x000000000040154d: (unknown)

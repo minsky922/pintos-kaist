@@ -13,17 +13,40 @@ Formatting file system...done.
 Boot complete.
 Putting 'lazy-anon' into the file system...
 Executing 'lazy-anon':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 60 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 0 user ticks
+(lazy-anon) begin
+(lazy-anon) initial pages status
+(lazy-anon) check if page is not loaded
+(lazy-anon) check if page is not loaded
+(lazy-anon) check if page is not loaded
+(lazy-anon) load pages
+(lazy-anon) load page [0]
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) check if page is not loaded
+(lazy-anon) check if page is not loaded
+(lazy-anon) load page [1]
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) check if page is not loaded
+(lazy-anon) load page [2]
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) check if page is loaded
+(lazy-anon) check memory content
+(lazy-anon) end
+lazy-anon: exit(0)
+Execution of 'lazy-anon' complete.
+Timer: 72 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 10 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 39 reads, 238 writes
+hd0:1: 81 reads, 238 writes
 hd1:0: 105 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1143 characters output
-Key
+Console: 1736 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

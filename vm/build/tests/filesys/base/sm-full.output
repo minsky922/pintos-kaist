@@ -13,17 +13,24 @@ Formatting file system...done.
 Boot complete.
 Putting 'sm-full' into the file system...
 Executing 'sm-full':
-Kernel PANIC at ../../userprog/process.c:75 in initd(): Fail to launch initd
-
-Call stack: 0x8004218427 0x800421bae1 0x80042079fc.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 59 ticks
-Thread: 30 idle ticks, 29 kernel ticks, 0 user ticks
+(sm-full) begin
+(sm-full) create "quux"
+(sm-full) open "quux"
+(sm-full) writing "quux"
+(sm-full) close "quux"
+(sm-full) open "quux" for verification
+(sm-full) verified contents of "quux"
+(sm-full) close "quux"
+(sm-full) end
+sm-full: exit(0)
+Execution of 'sm-full' complete.
+Timer: 67 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 38 reads, 240 writes
+hd0:1: 123 reads, 276 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1135 characters output
-Key
+Console: 1126 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
