@@ -17,20 +17,16 @@ Executing 'mmap-unmap':
 (mmap-unmap) begin
 (mmap-unmap) open "sample.txt"
 (mmap-unmap) mmap "sample.txt"
-mmap-unmap: exit(-1)
+(mmap-unmap) mmap "sample.txt": FAILED
+mmap-unmap: exit(1)
 Execution of 'mmap-unmap' complete.
-<<<<<<< HEAD
-Timer: 64 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 3 user ticks
-=======
-Timer: 65 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 3 user ticks
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
+Timer: 66 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 112 reads, 256 writes
 hd1:0: 109 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1062 characters output
+Console: 1100 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...

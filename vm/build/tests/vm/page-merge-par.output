@@ -4,11 +4,7 @@ Kernel command line: -q -f put page-merge-par put child-sort run page-merge-par
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-<<<<<<< HEAD
-Calibrating timer...  70,348,800 loops/s.
-=======
 Calibrating timer...  157,081,600 loops/s.
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 218 sector (109 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -21,50 +17,36 @@ Executing 'page-merge-par':
 (page-merge-par) begin
 (page-merge-par) init
 (page-merge-par) sort chunk 0
-<<<<<<< HEAD
 (page-merge-par) sort chunk 1
-(child-sort) open "buf0": FAILED
+child-sort: exit(-1)
+(page-merge-par) sort chunk 2
+(child-sort) open "buf1": FAILED
 child-sort: exit(1)
-(page-merge-par) sort chunk 2
-child-sort: exit(-1)
-=======
-child-sort: exit(-1)
-(page-merge-par) sort chunk 1
-child-sort: exit(-1)
-(page-merge-par) sort chunk 2
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
-child-sort: exit(-1)
 (page-merge-par) sort chunk 3
+(child-sort) open "buf2": FAILED
+child-sort: exit(1)
 child-sort: exit(-1)
 (page-merge-par) sort chunk 4
 child-sort: exit(-1)
 (page-merge-par) sort chunk 5
-child-sort: exit(-1)
 (page-merge-par) sort chunk 6
-child-sort: exit(-1)
+(child-sort) open "buf5": FAILED
+child-sort: exit(1)
 (page-merge-par) sort chunk 7
-child-sort: exit(-1)
+(child-sort) open "buf6": FAILED
+child-sort: exit(1)
 (page-merge-par) wait for child 0
 (page-merge-par) wait for child 0: FAILED
 page-merge-par: exit(1)
+child-sort: exit(-1)
 Execution of 'page-merge-par' complete.
-<<<<<<< HEAD
-Timer: 194 ticks
-Thread: 30 idle ticks, 48 kernel ticks, 116 user ticks
+Timer: 195 ticks
+Thread: 30 idle ticks, 50 kernel ticks, 115 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 725 reads, 4666 writes
+hd0:1: 765 reads, 4666 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1570 characters output
-=======
-Timer: 129 ticks
-Thread: 30 idle ticks, 36 kernel ticks, 63 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 391 reads, 4666 writes
-hd1:0: 218 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1538 characters output
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
+Console: 1667 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

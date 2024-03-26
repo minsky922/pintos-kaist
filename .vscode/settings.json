@@ -30,6 +30,9 @@
         "inspect.h": "c",
         "lib.h": "c",
         "debug.h": "c",
-        "disk.h": "c"
+        "disk.h": "c",
+        "stddef.h": "c",
+        "stdbool.h": "c",
+        "off_t.h": "c"
     }
 }

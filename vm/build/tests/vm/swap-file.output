@@ -4,11 +4,7 @@ Kernel command line: -q -f put swap-file put large.txt run swap-file
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x7e0000 (Usable: 7,040 kB)
-<<<<<<< HEAD
-Calibrating timer...  78,131,200 loops/s.
-=======
 Calibrating timer...  157,081,600 loops/s.
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 7,931 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -21,24 +17,16 @@ Executing 'swap-file':
 (swap-file) begin
 (swap-file) open "large.txt"
 (swap-file) mmap "large.txt"
-swap-file: exit(-1)
+(swap-file) mmap "large.txt": FAILED
+swap-file: exit(1)
 Execution of 'swap-file' complete.
-<<<<<<< HEAD
-Timer: 296 ticks
-Thread: 30 idle ticks, 223 kernel ticks, 43 user ticks
-=======
-Timer: 289 ticks
-Thread: 30 idle ticks, 217 kernel ticks, 42 user ticks
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
+Timer: 254 ticks
+Thread: 30 idle ticks, 220 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 4032 reads, 15900 writes
+hd0:1: 120 reads, 15900 writes
 hd1:0: 7931 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-<<<<<<< HEAD
-Console: 1054 characters output
-=======
-Console: 1055 characters output
->>>>>>> 054bbcf2b0d4ebe62e8f2793299f735e268f4129
+Console: 1089 characters output
 Keyboard: 0 keys pressed
-Exception: 1 page faults
+Exception: 0 page faults
 Powering off...

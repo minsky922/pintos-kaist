@@ -764,20 +764,13 @@ install_page (void *upage, void *kpage, bool writable) {
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
-struct lazy_load_info
-{
-    struct file *file;
-    off_t offset;
-    uint32_t read_bytes;
-    uint32_t zero_bytes;
-	bool writable;
-};
+
 /* 당신은 load_segment 함수 내부의 vm_alloc_page_with_initialize의 네 번째 인자가 lazy_load_segment 라는 것을 알아차렸을 것입니다.
  이 함수는 실행 가능한 파일의 페이지들을 초기화하는 함수이고 
 page fault가 발생할 때 호출됩니다. 이 함수는 페이지 구조체와 aux를 인자로 받습니다.
  aux는 load_segment에서 당신이 설정하는 정보입니다. 
  이 정보를 사용하여 당신은 세그먼트를 읽을 파일을 찾고 최종적으로는 세그먼트를 메모리에서 읽어야 합니다.*/
-static bool
+bool
 lazy_load_segment (struct page *page, void *aux) {
     /* TODO: Load the segment from the file */
     /* TODO: This called when the first page fault occurs on address VA. */

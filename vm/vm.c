@@ -226,6 +226,7 @@ vm_handle_wp (struct page *page UNUSED) {
 	user = pagfault가 user모드에서 발생했는지 kernal모드에서 발생했는지
 	pagefault가 쓰기 작업중에 발생했는지
 	 */
+	
 bool
 vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		bool user UNUSED, bool write UNUSED, bool not_present UNUSED) {
@@ -238,15 +239,20 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	}
 	if (not_present) // physical page 존재 x
 	{
-		void *rsp = f->rsp; // 유저 스택
+		void *rsp = f->rsp; // user access 인 경우 rsp는 user stack을 가리킨다.
 		if (!user) // kernel access인 경우 thread에서 rsp를 가져와야 한다.
 		rsp = thread_current()->rsp;
 		/* todo : stack growth */
 		// 스택 확장으로 처리할 수 있는 폴트인 경우, vm_stack_growth를 호출한다.
-        if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 == addr && addr <= USER_STACK)
-            vm_stack_growth(addr);
-        else if (USER_STACK - (1 << 20) <= rsp && rsp <= addr && addr <= USER_STACK)
-            vm_stack_growth(addr);
+		// 1<<20 = 1MB
+        // if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 <= addr && addr <= USER_STACK){
+        //     vm_stack_growth(addr);
+		// }
+		if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 <= addr && addr <= USER_STACK)
+			vm_stack_growth(addr);
+
+        // else if (USER_STACK - (1 << 20) <= rsp && rsp <= addr && addr <= USER_STACK)
+        //     vm_stack_growth(addr);
 
 		page = spt_find_page(spt, addr);
 		if (page == NULL)
@@ -326,7 +332,6 @@ supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
 }
 
 /* Copy supplemental page table from src to dst */
-// &current->spt, &parent->spt
 // &current->spt, &parent->spt
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
