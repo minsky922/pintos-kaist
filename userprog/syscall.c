@@ -55,7 +55,7 @@ syscall_init (void) {
 // 	}
 // }
 bool check_addr(char* addr){
-	if(!addr || !is_user_vaddr(addr)|| !pml4_get_page(thread_current()->pml4,addr))
+	if(!addr || !is_user_vaddr(addr))
 		return false;
 	return true;
 }
@@ -127,13 +127,36 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset){
 	if (addr == NULL | addr != pg_round_down(addr) | offset != pg_round_down(addr))
 		return NULL;
 	
-	struct file *file = find_file_by_fd(fd);
-	if (file == NULL | file_length(file) == NULL | (int)length == NULL)
+	// struct file *file = find_file_by_fd(fd);
+	// if (file == NULL | file_length(file) == NULL | (int)length == NULL)
+	// 	return NULL;
+
+	// if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
+	// 	return NULL;
+
+	// if (spt_find_page(&thread_current()->spt, addr))
+	// 	return NULL;
+	if (!addr || addr != pg_round_down(addr))
 		return NULL;
+
+	if(fd == 0 || fd == 1)
+        exit(-1);
+
+	if (offset != pg_round_down(offset))
+		return NULL;
+
+	// if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
+	// 	return NULL;
 
 	if (spt_find_page(&thread_current()->spt, addr))
 		return NULL;
-	
+
+	struct file *f = find_file_by_fd(fd);
+	if (f == NULL)
+		return NULL;
+
+	if (file_length(f) == 0 || (int)length <= 0)
+		return NULL;
 	
 	
 	return do_mmap(addr, length, writable, fd, offset);
@@ -340,6 +363,10 @@ int read (int fd, void *buffer, unsigned length){
 		struct file *file = find_file_by_fd(fd);
 		if (file == NULL){
 			return -1;
+		}
+		struct page *page = spt_find_page(&thread_current()->spt, buffer);
+		if (page && !page->writable){
+			exit(-1);
 		}
 		lock_acquire(&filesys_lock);
 		bytes_read = file_read(file,buffer,length);

@@ -33,6 +33,9 @@
         "disk.h": "c",
         "stddef.h": "c",
         "stdbool.h": "c",
-        "off_t.h": "c"
+        "off_t.h": "c",
+        "ctype.h": "c",
+        "timer.h": "c",
+        "io.h": "c"
     }
 }

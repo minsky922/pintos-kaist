@@ -50,6 +50,7 @@ struct page {
 	// void *addr; /* virtual address */
 	/* ... other members */
 	bool writable;
+	int mmap_cnt;
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
 	union {
@@ -67,6 +68,13 @@ struct frame {
 	void *kva;
 	struct page *page;
 	struct list_elem frame_elem;
+};
+
+struct slot
+{
+	struct page *page;
+	uint32_t slot_no;
+	struct list_elem swap_elem;
 };
 
 /* The function table for page operations.
@@ -127,4 +135,8 @@ struct lazy_load_info
 	bool writable;
 };
 
+struct list swap_table;
+struct list frame_table;
+struct lock swap_table_lock;
+struct lock frame_table_lock;
 #endif  /* VM_VM_H */

@@ -428,7 +428,7 @@ thread_preemption (void)
 {
 	struct list_elem *e = list_begin(&ready_list);
 	struct thread *t = list_entry(e, struct thread, elem);
-	if (thread_current() != idle_thread && !list_empty (&ready_list) && t->priority > thread_current ()->priority){
+	if (!intr_context () && thread_current() != idle_thread && !list_empty (&ready_list) && t->priority > thread_current ()->priority){
         thread_yield ();
 	}
 }

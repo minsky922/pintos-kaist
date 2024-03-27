@@ -7,7 +7,7 @@
 #include "threads/thread.h"
 #include "userprog/process.h"
 
-struct list frame_table;
+// struct list frame_table;
 
 /* Returns a hash value for page p. */
 unsigned
@@ -147,29 +147,31 @@ spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
 	return true;
 }
 
+struct list_elem* start;
 /* Get the struct frame, that will be evicted. */
+/* clock algorithm */
 static struct frame *
 vm_get_victim (void) {
-	struct frame *victim = NULL;
+	struct frame *victim = NULL; /* victim = 교체 페이지 대상 */
 	 /* TODO: The policy for eviction is up to you. */
-	// struct thread *curr = thread_current();
-	// struct list_elem *e, *start;
+	struct thread *curr = thread_current();
+	struct list_elem *e = start;
 
-	// for (start = e; start != list_end(&frame_table); start = list_next(start)) {
-	// 	victim = list_entry(start, struct frame, frame_elem);
-	// 	if (pml4_is_accessed(curr->pml4, victim->page->va))
-	// 		pml4_set_accessed(curr->pml4, victim->page->va, 0);
-	// 	else
-	// 		return victim;
-	// }
+	for (start = e; start != list_end(&frame_table); start = list_next(start)) {
+		victim = list_entry(start, struct frame, frame_elem);
+		if (pml4_is_accessed(curr->pml4, victim->page->va)) // 해당 프레임에 매핑된 페이지가 최근에 접근되었는지 확인 // Accessed 플래그 PTE_A
+			pml4_set_accessed(curr->pml4, victim->page->va, 0); // 접근된 경우 접근 비트를 0으로 재설정
+		else
+			return victim; // 접근 되지 않은 프레임은 교체 페이지 대상
+	}
 
-	// for (start = list_begin(&frame_table); start != e; start = list_next(start)) {
-	// 	victim = list_entry(start, struct frame, frame_elem);
-	// 	if (pml4_is_accessed(curr->pml4, victim->page->va))
-	// 		pml4_set_accessed(curr->pml4, victim->page->va, 0);
-	// 	else
-	// 		return victim;
-	// }
+	for (start = list_begin(&frame_table); start != e; start = list_next(start)) { // 두번째 순회
+		victim = list_entry(start, struct frame, frame_elem);
+		if (pml4_is_accessed(curr->pml4, victim->page->va))
+			pml4_set_accessed(curr->pml4, victim->page->va, 0);
+		else
+			return victim;
+	}
 	return victim;
 }
 
@@ -177,10 +179,10 @@ vm_get_victim (void) {
  * Return NULL on error.*/
 static struct frame *
 vm_evict_frame (void) {
-	struct frame *victim UNUSED = vm_get_victim ();
+	struct frame *victim = vm_get_victim ();
 	/* TODO: swap out the victim and return the evicted frame. */
-	//swap_out(vicitm->page);
-	return NULL;
+	swap_out(victim->page);
+	return victim;
 }
 
 /* palloc() and get frame. If there is no available page, evict the page
@@ -189,14 +191,17 @@ vm_evict_frame (void) {
  * space.*/
 static struct frame *
 vm_get_frame (void) {
-	struct frame *frame = NULL;
+	// struct frame *frame = NULL;
+	struct frame *frame = malloc(sizeof(struct frame)); // vm_do_claim_page에 넘어갈때 사라지면 안되니까 지역 변수 x, malloc으로 // malloc을 못하면 kernal 공간부족 그냥 끝
 	/* TODO: Fill this function. */
 	void *kva = palloc_get_page(PAL_USER);
 	/* todo : swap_out 처리 */
 	if (kva == NULL){   // palloc_get 실패하면 ram에 공간이 부족하다는 거니까 disk에서 swap_out 처리
-    	PANIC("todo");
+    	// PANIC("todo");
+		vm_evict_frame();
+		frame->page = NULL;
+		return frame;
 	}
-	frame = malloc(sizeof(struct frame)); // vm_do_claim_page에 넘어갈때 사라지면 안되니까 지역 변수 x, malloc으로 // malloc을 못하면 kernal 공간부족 그냥 끝
 	// struct frame *frame; 
     frame->kva = kva;
 	frame->page = NULL; // null로 초기화 함으로써 어떤 페이지와도 연결되지 않았음을 명확히 함
@@ -354,6 +359,27 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
             	void *aux = page->uninit.aux;
             	vm_alloc_page_with_initializer(VM_ANON, upage, writable, init, aux);
             	continue;
+        		}
+
+				/* type이 file이면 */
+        		if (type == VM_FILE)
+    			{
+				struct lazy_load_info *file_aux = malloc(sizeof(struct lazy_load_info));
+
+				file_aux->file = page->file.file;
+				file_aux->offset = page->file.offset;
+				file_aux->read_bytes = page->file.read_bytes;
+				file_aux->zero_bytes = page->file.zero_bytes;
+
+				if (!vm_alloc_page_with_initializer(type, upage, writable, NULL, file_aux))
+					return false;
+
+				struct page *file_page = spt_find_page(dst, upage);
+
+				file_backed_initializer(file_page, type, NULL);
+				file_page->frame = page->frame;
+				pml4_set_page(thread_current()->pml4, file_page->va, page->frame->kva, page->writable);
+				continue;
         		}
 
 				/* type이 uninit이 아니면*/
