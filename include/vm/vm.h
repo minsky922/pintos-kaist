@@ -135,8 +135,8 @@ struct lazy_load_info
 	bool writable;
 };
 
-struct list swap_table;
+// struct list swap_table;
 struct list frame_table;
-struct lock swap_table_lock;
+// struct lock swap_table_lock;
 struct lock frame_table_lock;
 #endif  /* VM_VM_H */

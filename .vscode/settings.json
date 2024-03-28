@@ -36,6 +36,7 @@
         "off_t.h": "c",
         "ctype.h": "c",
         "timer.h": "c",
-        "io.h": "c"
+        "io.h": "c",
+        "bitmap.h": "c"
     }
 }

@@ -1,10 +1,17 @@
 /* anon.c: Implementation of page for non-disk image (a.k.a. anonymous page). */
 
+#include <bitmap.h>
+#include "threads/vaddr.h"
+#include "threads/mmu.h"
 #include "vm/vm.h"
 #include "devices/disk.h"
 
+// : 1 sector = 512bytes, 1 page = 4096bytes -> 1 slot = 8 sector
+#define SECTORS_IN_PAGE PGSIZE / DISK_SECTOR_SIZE // 4096 / 512 = 8
 /* DO NOT MODIFY BELOW LINE */
 static struct disk *swap_disk;
+struct bitmap *swap_table;
+
 static bool anon_swap_in (struct page *page, void *kva);
 static bool anon_swap_out (struct page *page);
 static void anon_destroy (struct page *page);
@@ -21,22 +28,10 @@ static const struct page_operations anon_ops = {
 void
 vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
+	// uint32_t sip = SECTORS_IN_PAGE;
 	swap_disk = disk_get(1, 1);
-	list_init(&swap_table);
-
-	// swap_disk 크기만큼 slot을 만들어서 swap_table에 넣어둔다.
-	// 1 slot에 1 page를 담을 수 있는 slot 개수 구하기
-	// : 1 sector = 512bytes, 1 page = 4096bytes -> 1 slot = 8 sector
-	disk_sector_t swap_size = disk_size(swap_disk) / 8;
-	for (disk_sector_t i = 0; i < swap_size; i++)
-	{
-		struct slot *slot = (struct slot *)malloc(sizeof(struct slot));
-		slot->page = NULL;
-		slot->slot_no = i;
-		// lock_acquire(&swap_table_lock);
-		list_push_back(&swap_table, &slot->swap_elem);
-		// lock_release(&swap_table_lock);
-	}
+	int swap_size = disk_size(swap_disk) /SECTORS_IN_PAGE;
+	swap_table = bitmap_create(swap_size);
 }
 
 /* Initialize the file mapping */
@@ -52,7 +47,7 @@ anon_initializer (struct page *page, enum vm_type type, void *kva) {
 	page->operations = &anon_ops;
 	
 	struct anon_page *anon_page = &page->anon;
-	anon_page->slot_no = -1;
+
 	return true;
 }
 
@@ -66,6 +61,7 @@ anon_initializer (struct page *page, enum vm_type type, void *kva) {
 static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
+	
 }
 
 /* Swap out the page by writing contents to the swap disk. */
@@ -77,6 +73,11 @@ anon_swap_in (struct page *page, void *kva) {
 static bool
 anon_swap_out (struct page *page) {
 	struct anon_page *anon_page = &page->anon;
+
+	int page_no = bitmap_scan(swap_table, 0, 1, false); 
+	if (page_no == BITMAP_ERROR){
+		return false;
+	}
 }
 
 /* Destroy the anonymous page. PAGE will be freed by the caller. */
