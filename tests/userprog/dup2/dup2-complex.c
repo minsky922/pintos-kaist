@@ -52,7 +52,6 @@ main (int argc UNUSED, char *argv[] UNUSED) {
 
   close (fd1);
   close (fd2);
-
   seek (fd3, 60);
   byte_cnt += read (fd3, buffer + byte_cnt, 10);
 
