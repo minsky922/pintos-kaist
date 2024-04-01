@@ -17,7 +17,9 @@ test_main (void)
 
   CHECK (mmap ((void *) 0x10000000, 4096, 1, handle, 0x1000) == (void *) 0x10000000,
           "try to mmap with offset 0x1000");
+    // printf("close start");
   close (handle);
+//   printf("close success");
 
   msg ("validate mmap.");
   if (!memcmp ((void *) 0x10000000, &large[0x1000], 0x1000))

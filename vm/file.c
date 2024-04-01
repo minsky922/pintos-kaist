@@ -75,9 +75,10 @@ file_backed_destroy (struct page *page) {
 	
 	if (pml4_is_dirty(thread_current()->pml4, page->va))
 	{
-		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
+		file_write_at(page->file.file, page->va, page->file.read_bytes, page->file.offset);
 		pml4_set_dirty(thread_current()->pml4, page->va, 0);
 	}
+	hash_delete(&thread_current()->spt.spt_hash, &page->hash_elem);
 	pml4_clear_page(thread_current()->pml4, page->va);
 }
 
@@ -86,57 +87,96 @@ void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
 
+	bool succ = false;
+
 	void *original_addr = addr; // 매핑 성공 시 파일이 매핑된 가상 주소 반환하는 데 사용
 	struct file *f = file_reopen(file);
-	int total_page_count = length <= PGSIZE ? 1 : length % PGSIZE ? length / PGSIZE + 1
-																  : length / PGSIZE; // 이 매핑을 위해 사용한 총 페이지 수
+	// printf("do mmap \n");
+	// printf("do mmap addr : %p\n", addr);
+	// printf("do mmap length : %d\n", length);
+	// printf("do mmap writable : %d\n", writable);
+	// printf("do mmap file : %p\n",file);
+	// printf("do mmap offset : %d\n", offset);
+	int total_page_count = length <= PGSIZE ? 1 : (length % PGSIZE ? length / PGSIZE + 1 : length / PGSIZE); // 이 매핑을 위해 사용한 총 페이지 수
 
 	size_t read_bytes = file_length(f) < length ? file_length(f) : length;
 	size_t zero_bytes = PGSIZE - read_bytes % PGSIZE;
 
-	ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
-	ASSERT(pg_ofs(addr) == 0);	  // upage가 페이지 정렬되어 있는지 확인
-	ASSERT(offset % PGSIZE == 0); // ofs가 페이지 정렬되어 있는지 확인
+	// printf("size of read_bytes : %d\n", read_bytes);
+	// ASSERT((read_bytes + zero_bytes) % PGSIZE == 0);
+	// ASSERT(pg_ofs(addr) == 0);	  // upage가 페이지 정렬되어 있는지 확인
+	// ASSERT(offset % PGSIZE == 0); // ofs가 페이지 정렬되어 있는지 확인
 
-	while (read_bytes > 0 || zero_bytes > 0)
+	while (read_bytes > 0)
 	{
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+		// printf("size of page_read_bytes : %d\n", page_read_bytes);
 
 		struct lazy_load_info *lazy_load_info = (struct lazy_load_info *)malloc(sizeof(struct lazy_load_info));
+		// printf("lazy_load_info \n");
 		lazy_load_info->file = f;
 		lazy_load_info->offset = offset;
 		lazy_load_info->read_bytes = page_read_bytes;
 		lazy_load_info->zero_bytes = page_zero_bytes;
+		// if (read_bytes == 0){ // 왜 while 문 타는거지? -> while 조건 ||zero_bytes 없애니까 해결
+		// 	break;
+		// }
+		// printf("lazy_load_info->offset : %d\n", lazy_load_info->offset);
+		// printf("lazy_load_info->read_bytes : %d\n", lazy_load_info->read_bytes);
+		if (!vm_alloc_page_with_initializer(VM_FILE, original_addr,
+											writable, lazy_load_segment, lazy_load_info)){
+			file_close(f);
+			free(lazy_load_info);
+			// printf("vm_alloc_page_error \n");
 
-		if (!vm_alloc_page_with_initializer(VM_FILE, addr,
-											writable, lazy_load_segment, lazy_load_info))
 			return NULL;
+											}
 
-		struct page *p = spt_find_page(&thread_current()->spt, original_addr);
-		p->mmap_cnt = total_page_count;
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
-		addr += PGSIZE;
+		original_addr += PGSIZE;
 		offset += page_read_bytes;
+		// printf("advance offset : %d\n",offset);
+		// printf("advance readbytes : %d\n",read_bytes);
 	}
+		struct page *p = spt_find_page(&thread_current()->spt, addr);
+		p->mmap_cnt += total_page_count;
+		// printf("mmap_cnt: %d\n",p->mmap_cnt);
 
-	return original_addr;
+	// return original_addr;
+	if(read_bytes== 0){
+		// printf("do mmap length : %d\n", length);
+		succ = true;
+	}
+	if(succ){
+		// printf("do mmap success!\n");
+		// printf("do mmap final addr : %p\n", addr);
+		// printf("do mmap original addr: %p\n", original_addr);
+		return addr; // original이아닌 addr일때 pass
+	}
+	else{
+		return NULL;
+	}
+	
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
 	struct supplemental_page_table *spt = &thread_current()->spt;
-	struct page *page = spt_find_page(spt,addr);
-	int count = page->mmap_cnt;
+	struct page *p = spt_find_page(spt, addr);
+	int count = p->mmap_cnt;
 	for (int i = 0; i < count; i++)
 	{
-		if (page)
-			destroy(page);
+		if (p)
+			// destroy(p);
+			spt_remove_page(spt, p);
+
 		addr += PGSIZE;
-		page = spt_find_page(spt, addr);
+		p = spt_find_page(spt, addr);
 	}
 }
+

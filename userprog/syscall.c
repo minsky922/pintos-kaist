@@ -124,19 +124,24 @@ syscall_handler (struct intr_frame *f UNUSED) {
 
 /* fd로 열린 파일의 오프셋(offset) 바이트부터 length 바이트 만큼을 프로세스의 가상주소공간의 주소 addr 에 매핑 합니다. */
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset){
-	if (addr == NULL | addr != pg_round_down(addr) | offset != pg_round_down(addr))
-		return NULL;
+	
+	// if (addr == NULL | addr != pg_round_down(addr) | offset != pg_round_down(addr))
+	// 	return NULL;
 	
 	// struct file *file = find_file_by_fd(fd);
 	// if (file == NULL | file_length(file) == NULL | (int)length == NULL)
+
+	if(is_kernel_vaddr(addr) || addr == KERN_BASE - PGSIZE){
+		return NULL;
+	}
 	// 	return NULL;
 
-	// if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
-	// 	return NULL;
+	if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
+		return NULL;
 
-	// if (spt_find_page(&thread_current()->spt, addr))
-	// 	return NULL;
-	if (!addr || addr != pg_round_down(addr))
+	if (spt_find_page(&thread_current()->spt, addr))
+		return NULL;
+	if (!addr || addr != pg_round_down(addr) || pg_ofs(addr) != 0)
 		return NULL;
 
 	if(fd == 0 || fd == 1)
@@ -145,8 +150,8 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset){
 	if (offset != pg_round_down(offset))
 		return NULL;
 
-	// if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
-	// 	return NULL;
+	if (!is_user_vaddr(addr) || !is_user_vaddr(addr +length))
+		return NULL;
 
 	if (spt_find_page(&thread_current()->spt, addr))
 		return NULL;
@@ -155,11 +160,15 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset){
 	if (f == NULL)
 		return NULL;
 
-	if (file_length(f) == 0 || (int)length <= 0)
+	if(file_length(f)== 0){
+		exit(-1);
+	}
+
+	if ((int)length <= 0)
 		return NULL;
 	
 	
-	return do_mmap(addr, length, writable, fd, offset);
+	return do_mmap(addr, length, writable, f, offset);
 }
 
 
@@ -322,14 +331,17 @@ int open (const char *file){
 	if(!check_addr(file))
 		exit(-1);
 
+	lock_acquire(&filesys_lock);
 	struct file *f = filesys_open(file);
 
-	if (f == NULL)
-		return -1;
+	if (f == NULL){
+	lock_release(&filesys_lock);
+		return -1;}
 
 	int fd = create_fd(f);
 	if (fd == -1)
 		file_close(f);
+	lock_release(&filesys_lock);
 	return fd;
 }
 

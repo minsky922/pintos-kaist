@@ -4,7 +4,7 @@ Kernel command line: -q -f put fork-read put sample.txt run fork-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  94,924,800 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 111 sector (55 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -20,17 +20,24 @@ Executing 'fork-read':
 (fork-read) Child: pintos is funny!
 (fork-read) end
 child: exit(0)
-(fork-read) Parent success
-(fork-read) end
-fork-read: exit(0)
+Interrupt 0x0d (#GP General Protection Exception) at rip=80042201bc
+ cr2=0000000000606000 error=               0
+rax cccccccccccccccc rbx 0000000000606000 rcx 0000000004251498 rdx 0000000004251498
+rsp 000000800424dae0 rbp 000000800424daf0 rsi 0000000004251498 rdi cccccccccccccccc
+rip 00000080042201bc r8 0000000000000001  r9 0000000000000000 r10 0000000000000000
+r11 0000000000000206 r12 0000008004a29000 r13 0000000000000001 r14 000000800424deb0
+r15 0000000000000002 rflags 00000286
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC at ../../userprog/exception.c:97 in kill(): Kernel bug - unexpected interrupt in kernel
+Call stack: 0x800421843a 0x800421d291 0x8004209212 0x8004209630 0x800422062e 0x800421f6ca 0x800421cc18 0x8004222271 0x8004221dc3 0x8004221c74 0x800421d388 0x8004209212 0x8004209630 0x8004220745 0x800421f6ca 0x800421e08f 0x800421d70f 0x800421d430 0x4001d0 0x40053e 0x400fdf 0fork-read: exit(-1)
 Execution of 'fork-read' complete.
-Timer: 66 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 5 user ticks
+Timer: 72 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 10 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 117 reads, 260 writes
 hd1:0: 111 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1154 characters output
+Console: 2008 characters output
 Keyboard: 0 keys pressed
-Exception: 0 page faults
+Exception: 1 page faults
 Powering off...

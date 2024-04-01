@@ -79,15 +79,21 @@ bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
 
+			// printf("vm_alloc_page_with_initializer type: %d\n", type);
+			// printf("vm_alloc_page_with_initializer upage: %p\n", upage);
+			// printf("vm_alloc_page_with_initializer writable: %d\n", writable);
 	ASSERT (VM_TYPE(type) != VM_UNINIT)
 
+	// printf("before_spt_find_page\n");
 	struct supplemental_page_table *spt = &thread_current ()->spt;
-
 	/* Check wheter the upage is already occupied or not. */
+	// printf("vm_alloc_page_with_initializer_start\n");
+	// printf("spt_find_page: %p\n",spt_find_page(spt,upage));
 	if (spt_find_page (spt, upage) == NULL) {
 		/* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
+		// printf("after_spt_find_page\n");
 		struct page *page = (struct page *)malloc(sizeof(struct page));
 		/* TODO: Insert the page into the spt. */
 		/* Initiate the struct page and maps the pa to the va */
@@ -97,17 +103,26 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
         {
         case VM_ANON:
             initializer = anon_initializer;
+			// printf("vm alloc with initializer page type : VM_ANON : uninit_new \n");
             break;
         case VM_FILE:
             initializer = file_backed_initializer;
+			// printf("vm alloc with initializer page type : VM_FILE\n");
             break;
         }
 		uninit_new(page, upage, init, type, aux, initializer);
+		// printf("vm alloc with initializer uninit 성공\n");
 
 		page->writable = writable;
 
-		return spt_insert_page(spt, page);
+		if (!spt_insert_page(spt, page)) {
+			// printf("vm alloc with initializer insert 실패\n");
+			return false;
+		}
+		// printf("vm alloc with initializer insert 성공\n");
+		return true;
 	}
+	return false;
 err:
 	return false;
 }
@@ -143,6 +158,7 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 
 void
 spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
+	hash_delete(&spt->spt_hash, &page->hash_elem);
 	vm_dealloc_page (page);
 	return true;
 }
@@ -345,18 +361,18 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 			hash_first(&i, &src->spt_hash);
 			while (hash_next(&i)){
 				struct hash_elem *e = hash_cur(&i);
-				struct page *page = hash_entry(e, struct page, hash_elem);
-				void *upage = page->va;
-				bool writable = page->writable;
-				enum vm_type type = page->operations->type;
-				// void *aux = page->uninit.aux;
-				// vm_initializer *init = page->uninit.init;
+				struct page *src_page = hash_entry(e, struct page, hash_elem);
+				void *upage = src_page->va;
+				bool writable = src_page->writable;
+				enum vm_type type = src_page->operations->type;
+				// void *aux = src_page->uninit.aux;
+				// vm_initializer *init = src_page->uninit.init;
 				
 				/* type이 uninit 이면*/
 				if (type == VM_UNINIT)
-       		 	{ // uninit page 생성 & 초기화
-            	vm_initializer *init = page->uninit.init;
-            	void *aux = page->uninit.aux;
+       		 	{ // uninit src_page 생성 & 초기화
+            	vm_initializer *init = src_page->uninit.init;
+            	void *aux = src_page->uninit.aux;
             	vm_alloc_page_with_initializer(VM_ANON, upage, writable, init, aux);
             	continue;
         		}
@@ -366,10 +382,10 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
     			{
 				struct lazy_load_info *file_aux = malloc(sizeof(struct lazy_load_info));
 
-				file_aux->file = page->file.file;
-				file_aux->offset = page->file.offset;
-				file_aux->read_bytes = page->file.read_bytes;
-				file_aux->zero_bytes = page->file.zero_bytes;
+				file_aux->file = src_page->file.file;
+				file_aux->offset = src_page->file.offset;
+				file_aux->read_bytes = src_page->file.read_bytes;
+				// file_aux->zero_bytes = src_page->file.zero_bytes;
 
 				if (!vm_alloc_page_with_initializer(type, upage, writable, NULL, file_aux))
 					return false;
@@ -377,19 +393,20 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 				struct page *file_page = spt_find_page(dst, upage);
 
 				file_backed_initializer(file_page, type, NULL);
-				file_page->frame = page->frame;
-				pml4_set_page(thread_current()->pml4, file_page->va, page->frame->kva, page->writable);
+				// file_page->frame = src_page->frame;
+				pml4_set_page(thread_current()->pml4, file_page->va, src_page->frame->kva, src_page->writable);
 				continue;
         		}
 
 				/* type이 uninit이 아니면*/
+				
 				if (!vm_alloc_page(type, upage, writable))
 					return false;
 				if (!vm_claim_page(upage))
 					return false;
 				// hash_insert(&dst->spt_hash, &page->hash_elem);
 				struct page *dst_page = spt_find_page(dst,upage);
-				memcpy(dst_page->frame->kva, page->frame->kva, PGSIZE);
+				memcpy(dst_page->frame->kva, src_page->frame->kva, PGSIZE);
 			}
 			return true;
 }

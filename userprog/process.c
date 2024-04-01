@@ -22,6 +22,7 @@
 #include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
+#include "userprog/syscall.h"
 #endif
 
 static void process_cleanup (void);
@@ -199,7 +200,9 @@ __do_fork (void *aux) {
 		current->fdt[i] = file;
 	}
 	current->fd_idx = parent->fd_idx;
+	lock_acquire(&filesys_lock);
 	sema_up(&current->child_load_sema);
+	lock_release(&filesys_lock);
 	process_init ();
 
 	/* Finally, switch to the newly created process. */
@@ -227,6 +230,7 @@ process_exec (void *f_name) {
 
 	/* We first kill the current context */
 	process_cleanup ();
+	supplemental_page_table_init(&thread_current()->spt); //초기화해주지 않으면 exec 실패함
 
 	char *fn_copy;
 	fn_copy = palloc_get_page (0);
@@ -775,27 +779,18 @@ lazy_load_segment (struct page *page, void *aux) {
     /* TODO: Load the segment from the file */
     /* TODO: This called when the first page fault occurs on address VA. */
     /* TODO: VA is available when calling this function. */
-	struct frame *frame = page->frame;
-    struct lazy_load_info *lazy_load_info = (struct lazy_load_info*) aux;
-    
-    struct file *file = lazy_load_info->file;
-    size_t page_read_bytes = lazy_load_info->read_bytes;
-    size_t page_zero_bytes = lazy_load_info->zero_bytes;
-    bool writable = lazy_load_info->writable;
-    off_t offset = lazy_load_info->offset;
 
-	// 파일의 position을 offset으로 지정한다.
-    file_seek(file, offset);
-	// 파일을 read_bytes만큼 물리 프레임에 읽어 들인다
-    if (file_read(file, frame->kva, page_read_bytes) != (int)page_read_bytes)
-    {
-		palloc_free_page(frame->kva);
-        return false;
-    }
-	// 다 읽은 지점부터 zero_bytes만큼 0으로 채운다
-    memset(frame->kva + page_read_bytes, 0, page_zero_bytes);
+   struct lazy_load_info *lazy_load_info = (struct lazy_load_info *)aux;
+	file_seek(lazy_load_info->file, lazy_load_info->offset);
+	if (file_read(lazy_load_info->file, page->frame->kva, lazy_load_info->read_bytes) != (int)(lazy_load_info->read_bytes))
+	{
+		palloc_free_page(page->frame->kva);
+		return false;
+	}
+	memset(page->frame->kva + lazy_load_info->read_bytes, 0, lazy_load_info->zero_bytes);
+	free(lazy_load_info);
 
-    return true;
+	return true;
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
