@@ -4,6 +4,7 @@
 #include "threads/vaddr.h"
 #include "userprog/process.h"
 #include "threads/mmu.h"
+#include "userprog/syscall.h"
 
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
@@ -52,16 +53,51 @@ file_backed_initializer (struct page *page, enum vm_type type, void *kva) {
 	return true;
 }
 
+/* 파일에서 콘텐츠를 읽어 kva 페이지에서 swap in합니다.
+  파일 시스템과 동기화해야 합니다.*/
 /* Swap in the page by read contents from the file. */
 static bool
-file_backed_swap_in (struct page *page, void *kva) {
-	struct file_page *file_page UNUSED = &page->file;
+file_backed_swap_in(struct page *page, void *kva)
+{
+    // printf("file_backed_swap_in\n");
+    // struct file_page *file_page = &page->file;
+
+    // lock_acquire(&filesys_lock);
+    // off_t size = file_read_at(file_page->file, kva, (off_t)file_page->read_bytes, file_page->offset);
+    // lock_release(&filesys_lock);
+
+    // if (size != file_page->read_bytes)
+    //     return false;
+
+    // memset(kva + file_page->read_bytes, 0, file_page->zero_bytes);
+
+    // return true;
 }
 
+/* 내용을 다시 파일에 기록하여 swap out합니다.
+  먼저 페이지가 dirty  인지 확인하는 것이 좋습니다.
+  더럽지 않으면 파일의 내용을 수정할 필요가 없습니다.
+  페이지를 교체한 후에는 페이지의 더티 비트를 꺼야 합니다. */
 /* Swap out the page by writeback contents to the file. */
 static bool
-file_backed_swap_out (struct page *page) {
-	struct file_page *file_page UNUSED = &page->file;
+file_backed_swap_out(struct page *page)
+{
+    // printf("file_backed_swap_out\n");
+    struct file_page *file_page = &page->file;
+    struct thread *curr_thread = thread_current();
+
+    // if (pml4_is_dirty(curr_thread->pml4, page->va))
+    // {
+    //     lock_acquire(&filesys_lock);
+    //     file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
+    //     lock_release(&filesys_lock);
+
+    //     pml4_set_dirty(curr_thread->pml4, page->va, false);
+    // }
+    // pml4_clear_page(curr_thread->pml4, page->va);
+    // page->frame = NULL;
+
+    // return true;
 }
 
 /* 관련 파일을 닫아 파일 지원 페이지를 파괴합니다.
@@ -70,15 +106,14 @@ file_backed_swap_out (struct page *page) {
   file_backed_destroy의 호출자는 이를 처리해야 합니다.*/
 /* Destory the file backed page. PAGE will be freed by the caller. */
 static void
-file_backed_destroy (struct page *page) {
-	struct file_page *file_page UNUSED = &page->file;
-	
+file_backed_destroy(struct page *page)
+{
+   struct file_page *file_page = &page->file;
 	if (pml4_is_dirty(thread_current()->pml4, page->va))
 	{
-		file_write_at(page->file.file, page->va, page->file.read_bytes, page->file.offset);
+		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
 		pml4_set_dirty(thread_current()->pml4, page->va, 0);
 	}
-	hash_delete(&thread_current()->spt.spt_hash, &page->hash_elem);
 	pml4_clear_page(thread_current()->pml4, page->va);
 }
 
@@ -172,8 +207,8 @@ do_munmap (void *addr) {
 	for (int i = 0; i < count; i++)
 	{
 		if (p)
-			// destroy(p);
-			spt_remove_page(spt, p);
+			destroy(p);
+			// spt_remove_page(spt, p);
 
 		addr += PGSIZE;
 		p = spt_find_page(spt, addr);

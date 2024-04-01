@@ -50,7 +50,9 @@ vm_init (void) {
 	register_inspect_intr ();
 	/* DO NOT MODIFY UPPER LINES. */
 	/* TODO: Your code goes here. */
-	list_init(&frame_table);	
+	list_init(&frame_table);
+	lock_init(&frame_table_lock);
+	lock_init(&kill_lock);
 }
 
 /* Get the type of the page. This function is useful if you want to know the
@@ -165,29 +167,66 @@ spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
 
 struct list_elem* start;
 /* Get the struct frame, that will be evicted. */
-/* clock algorithm */
 static struct frame *
 vm_get_victim (void) {
 	struct frame *victim = NULL; /* victim = 교체 페이지 대상 */
+/* clock algorithm */
 	 /* TODO: The policy for eviction is up to you. */
-	struct thread *curr = thread_current();
-	struct list_elem *e = start;
+	// struct thread *curr = thread_current();
+	// struct list_elem *e = start;
 
-	for (start = e; start != list_end(&frame_table); start = list_next(start)) {
-		victim = list_entry(start, struct frame, frame_elem);
-		if (pml4_is_accessed(curr->pml4, victim->page->va)) // 해당 프레임에 매핑된 페이지가 최근에 접근되었는지 확인 // Accessed 플래그 PTE_A
-			pml4_set_accessed(curr->pml4, victim->page->va, 0); // 접근된 경우 접근 비트를 0으로 재설정
-		else
-			return victim; // 접근 되지 않은 프레임은 교체 페이지 대상
-	}
+	// printf("vm_get_vicitm start\n");
 
-	for (start = list_begin(&frame_table); start != e; start = list_next(start)) { // 두번째 순회
-		victim = list_entry(start, struct frame, frame_elem);
-		if (pml4_is_accessed(curr->pml4, victim->page->va))
-			pml4_set_accessed(curr->pml4, victim->page->va, 0);
-		else
-			return victim;
+	// for (start = e; start != list_end(&frame_table); start = list_next(start)) {
+	// 	victim = list_entry(start, struct frame, frame_elem);
+	// 	if (pml4_is_accessed(curr->pml4, victim->page->va)) // 해당 프레임에 매핑된 페이지가 최근에 접근되었는지 확인 // Accessed 플래그 PTE_A
+	// 		pml4_set_accessed(curr->pml4, victim->page->va, 0); // 접근된 경우 접근 비트를 0으로 재설정
+	// 	else
+	// 		return victim; // 접근 되지 않은 프레임은 교체 페이지 대상
+	// }
+
+	// for (start = list_begin(&frame_table); start != e; start = list_next(start)) { // 두번째 순회
+	// 	victim = list_entry(start, struct frame, frame_elem);
+	// 	if (pml4_is_accessed(curr->pml4, victim->page->va))
+	// 		pml4_set_accessed(curr->pml4, victim->page->va, 0);
+	// 	else
+	// 		return victim;
+	// }
+	// return victim;
+	
+	/* lru_algorithm */
+	// lock_acquire(&frame_table_lock);
+	size_t lru_len = list_size(&frame_table);
+	struct list_elem *e = list_begin(&frame_table);
+	struct frame *tmp_frame;
+	struct list_elem *next_tmp;
+	for (size_t i = 0; i < lru_len; i++)
+	{
+		tmp_frame = list_entry(e, struct frame, frame_elem);
+		if (pml4_is_accessed(thread_current()->pml4, tmp_frame->page->va))
+		{
+			pml4_set_accessed(thread_current()->pml4, tmp_frame->page->va, false);
+			next_tmp = list_next(e);
+			list_remove(e);
+			list_push_back(&frame_table, e);
+			e = next_tmp;
+			continue;
+		}
+		if (victim == NULL)
+		{
+			victim = tmp_frame;
+			next_tmp = list_next(e);
+			list_remove(e);
+			e = next_tmp;
+			continue;
+		}
+		e = list_next(e);
 	}
+	if (victim == NULL)
+		victim = list_entry(list_pop_front(&frame_table), struct frame, frame_elem);
+	
+	// lock_acquire(&frame_table_lock);
+
 	return victim;
 }
 
@@ -195,9 +234,12 @@ vm_get_victim (void) {
  * Return NULL on error.*/
 static struct frame *
 vm_evict_frame (void) {
+
+	// printf("passed from vm_get_frame\n");
 	struct frame *victim = vm_get_victim ();
 	/* TODO: swap out the victim and return the evicted frame. */
-	swap_out(victim->page);
+	if (victim->page)
+		swap_out(victim->page);
 	return victim;
 }
 
@@ -214,15 +256,16 @@ vm_get_frame (void) {
 	/* todo : swap_out 처리 */
 	if (kva == NULL){   // palloc_get 실패하면 ram에 공간이 부족하다는 거니까 disk에서 swap_out 처리
     	// PANIC("todo");
-		vm_evict_frame();
+		// printf("vm_get_frame: %p\n",kva);
+		struct frame *victim = vm_evict_frame();
 		frame->page = NULL;
-		return frame;
+		return victim;
 	}
 	// struct frame *frame; 
     frame->kva = kva;
 	frame->page = NULL; // null로 초기화 함으로써 어떤 페이지와도 연결되지 않았음을 명확히 함
 
-	list_push_back(&frame_table, &frame->frame_elem); // frame_elem으로 frame 구조체에 접근할수잇음
+	// list_push_back(&frame_table, &frame->frame_elem); // frame_elem으로 frame 구조체에 접근할수잇음
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
 	return frame;
@@ -255,7 +298,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	struct page *page = NULL;
 	/* TODO: Validate the fault */
 	/* TODO: Your code goes here */
-	if (is_kernel_vaddr(addr)) {
+	if (is_kernel_vaddr(addr) && addr == NULL) {
 		return false;
 	}
 	if (not_present) // physical page 존재 x
@@ -266,14 +309,8 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		/* todo : stack growth */
 		// 스택 확장으로 처리할 수 있는 폴트인 경우, vm_stack_growth를 호출한다.
 		// 1<<20 = 1MB
-        // if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 <= addr && addr <= USER_STACK){
-        //     vm_stack_growth(addr);
-		// }
 		if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 <= addr && addr <= USER_STACK)
 			vm_stack_growth(addr);
-
-        // else if (USER_STACK - (1 << 20) <= rsp && rsp <= addr && addr <= USER_STACK)
-        //     vm_stack_growth(addr);
 
 		page = spt_find_page(spt, addr);
 		if (page == NULL)
@@ -287,29 +324,6 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
     return false;
 }
 
-//  if (not_present) // 접근한 메모리의 physical page가 존재하지 않은 경우
-//     {
-//         /* TODO: Validate the fault */
-//         // 페이지 폴트가 스택 확장에 대한 유효한 경우인지를 확인한다.
-//         void *rsp = f->rsp; // user access인 경우 rsp는 유저 stack을 가리킨다.
-//         if (!user)            // kernel access인 경우 thread에서 rsp를 가져와야 한다.
-//             rsp = thread_current()->rsp;
-
-//         // 스택 확장으로 처리할 수 있는 폴트인 경우, vm_stack_growth를 호출한다.
-//         if (USER_STACK - (1 << 20) <= rsp - 8 && rsp - 8 == addr && addr <= USER_STACK)
-//             vm_stack_growth(addr);
-//         else if (USER_STACK - (1 << 20) <= rsp && rsp <= addr && addr <= USER_STACK)
-//             vm_stack_growth(addr);
-
-//         page = spt_find_page(spt, addr);
-//         if (page == NULL)
-//             return false;
-//         if (write == 1 && page->writable == 0) // write 불가능한 페이지에 write 요청한 경우
-//             return false;
-//         return vm_do_claim_page(page);
-//     }
-//     return false;
-// }
 /* Free the page.
  * DO NOT MODIFY THIS FUNCTION. */
 void
@@ -338,6 +352,10 @@ vm_do_claim_page (struct page *page) {
 	/* Set links */
 	frame->page = page;
 	page->frame = frame;
+
+	lock_acquire(&frame_table_lock);
+	list_push_back(&frame_table, &frame->frame_elem);
+	lock_release(&frame_table_lock);
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
 	pml4_set_page(thread_current()->pml4, page->va, frame->kva, page->writable);
@@ -385,7 +403,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 				file_aux->file = src_page->file.file;
 				file_aux->offset = src_page->file.offset;
 				file_aux->read_bytes = src_page->file.read_bytes;
-				// file_aux->zero_bytes = src_page->file.zero_bytes;
+				file_aux->zero_bytes = src_page->file.zero_bytes;
 
 				if (!vm_alloc_page_with_initializer(type, upage, writable, NULL, file_aux))
 					return false;
@@ -393,7 +411,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 				struct page *file_page = spt_find_page(dst, upage);
 
 				file_backed_initializer(file_page, type, NULL);
-				// file_page->frame = src_page->frame;
+				file_page->frame = src_page->frame;
 				pml4_set_page(thread_current()->pml4, file_page->va, src_page->frame->kva, src_page->writable);
 				continue;
         		}
@@ -413,8 +431,9 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 
 void clear_table(struct hash_elem *e, void *aux){
 	struct page *page = hash_entry(e, struct page, hash_elem);
-	destroy(page);
-	free(page);
+	// destroy(page);
+	// free(page);
+	vm_dealloc_page(page);
 }
 /* Free the resource hold by the supplemental page table */
 void
@@ -422,5 +441,8 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
 	// 해시 테이블을 재사용하려면 hash_clear를, 해시 테이블을 완전히 제거하려면 hash_destroy를
-	hash_clear(&spt->spt_hash, clear_table);
+	// hash_clear(&spt->spt_hash, clear_table);
+	// lock_acquire(&kill_lock);
+	hash_destroy(&spt->spt_hash, clear_table);
+	// lock_release(&kill_lock);
 }

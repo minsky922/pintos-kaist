@@ -139,4 +139,5 @@ struct list swap_table;
 struct list frame_table;
 struct lock swap_table_lock;
 struct lock frame_table_lock;
+struct lock kill_lock;
 #endif  /* VM_VM_H */

@@ -214,7 +214,12 @@ void exit (int status)
 pid_t fork (const char *thread_name, const struct intr_frame *f){
 	struct thread *curr = thread_current ();
 	// printf("[DBG] fork() {%s} try to fork {%s}\n", curr->name, thread_name); //
-	return process_fork(thread_name, f);
+	// lock_acquire(&filesys_lock);
+	// return process_fork(thread_name, f);
+	pid_t fork_result = process_fork(thread_name, f);
+	// lock_release(&filesys_lock);
+
+	return fork_result;
 }
 
 /* process_create_initd 과 유사, thread_create은 fork에서 */
@@ -320,9 +325,9 @@ bool create (const char *file, unsigned initial_size){
 bool remove (const char *file){
 	if(!check_addr(file))
 		exit(-1);
-	//lock_acquire(&filesys_lock);
+	lock_acquire(&filesys_lock);
 	bool success = filesys_remove(file);
-	//lock_release(&filesys_lock);
+	lock_release(&filesys_lock);
 	return success;
 }
 
@@ -355,6 +360,10 @@ int filesize (int fd){
 int read (int fd, void *buffer, unsigned length){
 	if(!check_addr(buffer))
 			exit(-1);
+	struct page *page = spt_find_page(&thread_current()->spt, buffer);
+	if (page && !page->writable){
+			exit(-1);
+		}
 	char *ptr = (char *)buffer;
 	int bytes_read = 0;
 
@@ -375,10 +384,6 @@ int read (int fd, void *buffer, unsigned length){
 		struct file *file = find_file_by_fd(fd);
 		if (file == NULL){
 			return -1;
-		}
-		struct page *page = spt_find_page(&thread_current()->spt, buffer);
-		if (page && !page->writable){
-			exit(-1);
 		}
 		lock_acquire(&filesys_lock);
 		bytes_read = file_read(file,buffer,length);
@@ -447,8 +452,10 @@ void close (int fd){
 	struct file *file = find_file_by_fd(fd);
 	if(file == NULL)
 		return;
+	// lock_acquire(&filesys_lock);
 	file_close(file);
 	del_fd(fd);
+	// lock_release(&filesys_lock);
 }
 
 

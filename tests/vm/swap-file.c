@@ -23,12 +23,12 @@ test_main (void)
     /* Map a page to a file */
     CHECK ((handle = open ("large.txt")) > 1, "open \"large.txt\"");
     CHECK ((map = mmap (actual, sizeof(large), 0, handle, 0)) != MAP_FAILED, "mmap \"large.txt\"");
-
+    // printf("mmap is completed\n");
     /* Check that data is correct. */
     if (memcmp (actual, large, strlen (large)))
         fail ("read of mmap'd file reported bad data");
-
     /* Verify that data is followed by zeros. */
+    // printf("memcmp is completed\n");
     size_t len = strlen(large);
     size_t page_end;
     for(page_end = 0; page_end < len; page_end+=4096);

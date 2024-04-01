@@ -9,4 +9,5 @@ vm/file.o: ../../vm/file.c ../../include/vm/vm.h \
  ../../include/threads/interrupt.h ../../include/threads/synch.h \
  ../../include/lib/kernel/hash.h ../../include/threads/vaddr.h \
  ../../include/threads/loader.h ../../include/userprog/process.h \
- ../../include/threads/mmu.h ../../include/threads/pte.h
+ ../../include/threads/mmu.h ../../include/threads/pte.h \
+ ../../include/userprog/syscall.h ../../include/filesys/off_t.h

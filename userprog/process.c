@@ -200,9 +200,9 @@ __do_fork (void *aux) {
 		current->fdt[i] = file;
 	}
 	current->fd_idx = parent->fd_idx;
-	lock_acquire(&filesys_lock);
+	// lock_acquire(&filesys_lock);
 	sema_up(&current->child_load_sema);
-	lock_release(&filesys_lock);
+	// lock_release(&filesys_lock);
 	process_init ();
 
 	/* Finally, switch to the newly created process. */
