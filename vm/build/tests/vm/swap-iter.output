@@ -4,7 +4,7 @@ Kernel command line: -q -f put swap-iter put large.txt run swap-iter
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x9e0000 (Usable: 9,088 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  55,193,600 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 7,932 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -37,16 +37,16 @@ Executing 'swap-iter':
 (swap-iter) check consistency in page 3584
 (swap-iter) check consistency in page 4096
 (swap-iter) check consistency in page 4608
-(swap-iter) read of mmap'd file reported bad data: FAILED
-swap-iter: exit(1)
+(swap-iter) end
+swap-iter: exit(0)
 Execution of 'swap-iter' complete.
-Timer: 6441 ticks
-Thread: 30 idle ticks, 219 kernel ticks, 6192 user ticks
+Timer: 6643 ticks
+Thread: 30 idle ticks, 227 kernel ticks, 6386 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 7945 reads, 15902 writes
+hd0:1: 11858 reads, 15902 writes
 hd1:0: 7932 reads, 0 writes
-hd1:1: 44936 reads, 80152 writes
-Console: 1967 characters output
+hd1:1: 44968 reads, 84104 writes
+Console: 1925 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

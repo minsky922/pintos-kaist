@@ -111,13 +111,13 @@ anon_destroy(struct page *page)
     {
         // printf("anon_destroy: %s\n", thread_current()->name);
         // printf("remove: %p, kva:%p\n", page->va, page->frame->kva);
-        // printf("list_size: %d, list: %p\n", list_size(&lru), &lru);
+        // printf("list_size: %d, list: %p\n", list_size(&frame_table), &frame_table);
 
         lock_acquire(&frame_table_lock);
         list_remove(&page->frame->frame_elem);
         lock_release(&frame_table_lock);
 
-        // printf("anon_destroy: list: %p\n", &lru);
+        // printf("anon_destroy: list: %p\n", &frame_table);
 
         // pte write bit 1 -> free
         free(page->frame);

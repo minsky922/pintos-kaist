@@ -408,6 +408,7 @@ process_cleanup (void) {
 	/* Destroy the current process's page directory and switch back
 	 * to the kernel-only page directory. */
 	pml4 = curr->pml4;
+	// printf("process_cleanup_pml4 :%d",pml4);
 	if (pml4 != NULL) {
 		/* Correct ordering here is crucial.  We must set
 		 * cur->pagedir to NULL before switching page directories,

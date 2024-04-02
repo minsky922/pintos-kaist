@@ -18,7 +18,9 @@ test_main (void)
 
   CHECK ((handle = open ("sample.txt")) > 1, "open \"sample.txt\"");
   buffer = get_boundary_area () - sizeof sample / 2;
+  // printf("fork-read buffer: %p\n",buffer);
   byte_cnt = read (handle, buffer, 20);
+  // printf("fork-read byte_cnt: %d\n",byte_cnt);
   
   if ((pid = fork("child"))){
     wait (pid);
@@ -49,9 +51,12 @@ test_main (void)
       }
 
     char magic_sentence[17] = "pintos is funny!";
+    // printf("memcpy start\n");
     memcpy(buffer, magic_sentence, 17);
-
+    // printf("memcpy end\n"); 
     msg ("Child: %s", buffer);
+    // printf("close start\n");
     close(handle);
+    // printf("close end\n");
   }
 }

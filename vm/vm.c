@@ -238,8 +238,8 @@ vm_evict_frame (void) {
 	// printf("passed from vm_get_frame\n");
 	struct frame *victim = vm_get_victim ();
 	/* TODO: swap out the victim and return the evicted frame. */
-	if (victim->page)
-		swap_out(victim->page);
+	// if (victim->page)
+	swap_out(victim->page);
 	return victim;
 }
 
@@ -443,6 +443,6 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	// 해시 테이블을 재사용하려면 hash_clear를, 해시 테이블을 완전히 제거하려면 hash_destroy를
 	// hash_clear(&spt->spt_hash, clear_table);
 	// lock_acquire(&kill_lock);
-	hash_destroy(&spt->spt_hash, clear_table);
+	hash_clear(&spt->spt_hash, clear_table);
 	// lock_release(&kill_lock);
 }

@@ -6,6 +6,7 @@
 #include "threads/mmu.h"
 #include "userprog/syscall.h"
 
+static struct lock file_backed_lock;
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
 static void file_backed_destroy (struct page *page);
@@ -22,7 +23,7 @@ static const struct page_operations file_ops = {
 /* 파일 지원 페이지 하위 시스템을 초기화합니다. 이 기능에서는 파일 백업 페이지와 관련된 모든 것을 설정할 수 있습니다. */
 void
 vm_file_init (void) {
-	
+	lock_init(&file_backed_lock);
 }
 
 // struct file *file;
@@ -60,18 +61,20 @@ static bool
 file_backed_swap_in(struct page *page, void *kva)
 {
     // printf("file_backed_swap_in\n");
-    // struct file_page *file_page = &page->file;
+    struct file_page *file_page = &page->file;
 
-    // lock_acquire(&filesys_lock);
-    // off_t size = file_read_at(file_page->file, kva, (off_t)file_page->read_bytes, file_page->offset);
-    // lock_release(&filesys_lock);
+    lock_acquire(&file_backed_lock);
+    off_t size = file_read_at(file_page->file, kva, (off_t)file_page->read_bytes, file_page->offset);
+    lock_release(&file_backed_lock);
 
-    // if (size != file_page->read_bytes)
-    //     return false;
+	// printf("file_bakce_swap_in_ing\n");
 
-    // memset(kva + file_page->read_bytes, 0, file_page->zero_bytes);
+    if (size != file_page->read_bytes)
+        return false;
 
-    // return true;
+    memset(kva + file_page->read_bytes, 0, file_page->zero_bytes);
+
+    return true;
 }
 
 /* 내용을 다시 파일에 기록하여 swap out합니다.
@@ -82,22 +85,20 @@ file_backed_swap_in(struct page *page, void *kva)
 static bool
 file_backed_swap_out(struct page *page)
 {
-    // printf("file_backed_swap_out\n");
-    struct file_page *file_page = &page->file;
-    struct thread *curr_thread = thread_current();
+	struct file_page *file_page UNUSED = &page->file;
+	if (pml4_is_dirty(thread_current()->pml4, page->va))
+	{	
+		lock_acquire(&file_backed_lock);
+		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
+		lock_release(&file_backed_lock);
+		pml4_set_dirty(thread_current()->pml4, page->va, false);
+	}
 
-    // if (pml4_is_dirty(curr_thread->pml4, page->va))
-    // {
-    //     lock_acquire(&filesys_lock);
-    //     file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
-    //     lock_release(&filesys_lock);
-
-    //     pml4_set_dirty(curr_thread->pml4, page->va, false);
-    // }
-    // pml4_clear_page(curr_thread->pml4, page->va);
-    // page->frame = NULL;
-
-    // return true;
+	// 페이지와 프레임의 연결 끊기
+	page->frame->page = NULL;
+	page->frame = NULL;
+	pml4_clear_page(thread_current()->pml4, page->va);
+	return true;
 }
 
 /* 관련 파일을 닫아 파일 지원 페이지를 파괴합니다.
@@ -115,6 +116,16 @@ file_backed_destroy(struct page *page)
 		pml4_set_dirty(thread_current()->pml4, page->va, 0);
 	}
 	pml4_clear_page(thread_current()->pml4, page->va);
+
+	// struct file_page *file_page = &page->file;
+    // // list_remove(&(file_page->file_elem));
+    // if (page->frame != NULL)
+    // {
+    //     lock_acquire(&frame_table_lock);
+    //     list_remove(&(page->frame->frame_elem));
+    //     lock_release(&frame_table_lock);
+    //     free(page->frame);
+    // }
 }
 
 /* Do the mmap */
@@ -154,6 +165,7 @@ do_mmap (void *addr, size_t length, int writable,
 		lazy_load_info->offset = offset;
 		lazy_load_info->read_bytes = page_read_bytes;
 		lazy_load_info->zero_bytes = page_zero_bytes;
+		lazy_load_info->writable = writable;
 		// if (read_bytes == 0){ // 왜 while 문 타는거지? -> while 조건 ||zero_bytes 없애니까 해결
 		// 	break;
 		// }

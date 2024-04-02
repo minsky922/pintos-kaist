@@ -361,6 +361,9 @@ int read (int fd, void *buffer, unsigned length){
 	if(!check_addr(buffer))
 			exit(-1);
 	struct page *page = spt_find_page(&thread_current()->spt, buffer);
+	if (page == NULL){
+		exit(-1);
+	}
 	if (page && !page->writable){
 			exit(-1);
 		}
@@ -396,6 +399,13 @@ int read (int fd, void *buffer, unsigned length){
 int write (int fd, const void *buffer, unsigned length){
 	if(check_addr(buffer) == 0)
 		exit(-1);
+	// 	struct page *page = spt_find_page(&thread_current()->spt, buffer);
+	// if (page == NULL){
+	// 	exit(-1);
+	// }
+	// if (page && !page->writable){
+	// 		exit(-1);
+	// 	}
 	int bytes_written = 0;
 	if (fd == 1){
 		//lock_acquire(&filesys_lock);
