@@ -360,10 +360,12 @@ int filesize (int fd){
 int read (int fd, void *buffer, unsigned length){
 	if(!check_addr(buffer))
 			exit(-1);
+	// printf("syscall_read fd: %d, buffer: %p, length: %d\n", fd, buffer, length);
 	struct page *page = spt_find_page(&thread_current()->spt, buffer);
-	if (page == NULL){
-		exit(-1);
-	}
+	// printf("syscall_read page: %p\n", page);
+	// if (page == NULL){
+	// 	exit(-1);
+	// }
 	if (page && !page->writable){
 			exit(-1);
 		}
@@ -388,6 +390,7 @@ int read (int fd, void *buffer, unsigned length){
 		if (file == NULL){
 			return -1;
 		}
+		// printf("syscall_read file_read start\n");
 		lock_acquire(&filesys_lock);
 		bytes_read = file_read(file,buffer,length);
 		lock_release(&filesys_lock);

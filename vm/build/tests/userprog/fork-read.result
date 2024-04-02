@@ -1,6 +1,6 @@
 FAIL
 Kernel panic in run: PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0x800421843a 0x800420bd2e 0x800420bd7b 0x800420d0aa 0x800420d12d 0x800420d1b0 0x800420d279 0x800421c676 0x800421c5c7 0x800420757a 0x800421dab4 0x800421d38f 0x8004209212 0x8004209630 0x800422075a 0x800421f6df 0x800421e0a4 0x800421d6e3 0x800421d404f
+Call stack: 0x800421843a 0x800420bd2e 0x800420bd7b 0x800420d0aa 0x800420d12d 0x800420d1b0 0x800420d279 0x800421c676 0x800421c5c7 0x800420757a 0x800421dab4 0x800421d38f 0x8004209212 0x8004209630 0x8004220742 0x800421f6c7 0x800421e08c 0x800421d6e3 0x800421d404f
 Translation of call stack:
 0x000000800421843a: debug_panic (lib/kernel/debug.c:32)
 0x000000800420bd2e: palloc_free_multiple (threads/palloc.c:322)
@@ -16,8 +16,8 @@ Translation of call stack:
 0x000000800421d38f: page_fault (userprog/exception.c:147)
 0x0000008004209212: intr_handler (threads/interrupt.c:352)
 0x0000008004209630: intr_entry (threads/intr-stubs.o:?)
-0x000000800422075a: inode_read_at (filesys/inode.c:219)
-0x000000800421f6df: file_read (filesys/file.c:74)
-0x000000800421e0a4: read (userprog/syscall.c:392)
+0x0000008004220742: inode_read_at (filesys/inode.c:219)
+0x000000800421f6c7: file_read (filesys/file.c:74)
+0x000000800421e08c: read (userprog/syscall.c:395)
 0x000000800421d6e3: syscall_handler (userprog/syscall.c:99)
 0x00000800421d404f: (unknown)
