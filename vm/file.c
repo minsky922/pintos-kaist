@@ -178,11 +178,8 @@ do_mmap (void *addr, size_t length, int writable,
 			file_close(f);
 			free(lazy_load_info);
 			// printf("vm_alloc_page_error \n");
-
 			return NULL;
 											}
-
-
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;

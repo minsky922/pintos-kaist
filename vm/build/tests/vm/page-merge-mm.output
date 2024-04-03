@@ -29,11 +29,11 @@ child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
-child-qsort-mm: exit(80)
-child-qsort-mm: exit(80)
-child-qsort-mm: exit(80)
-child-qsort-mm: exit(80)
 (page-merge-mm) wait for child 1
+child-qsort-mm: exit(80)
+child-qsort-mm: exit(80)
+child-qsort-mm: exit(80)
+child-qsort-mm: exit(80)
 (page-merge-mm) wait for child 2
 (page-merge-mm) wait for child 3
 (page-merge-mm) wait for child 4
@@ -46,8 +46,8 @@ child-qsort-mm: exit(80)
 (page-merge-mm) end
 page-merge-mm: exit(0)
 Execution of 'page-merge-mm' complete.
-Timer: 342 ticks
-Thread: 30 idle ticks, 50 kernel ticks, 262 user ticks
+Timer: 339 ticks
+Thread: 30 idle ticks, 53 kernel ticks, 257 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 4876 reads, 6726 writes
 hd1:0: 224 reads, 0 writes

@@ -99,20 +99,24 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		struct page *page = (struct page *)malloc(sizeof(struct page));
 		/* TODO: Insert the page into the spt. */
 		/* Initiate the struct page and maps the pa to the va */
-		bool (*initializer) (struct page *, enum vm_type, void *);
+		// bool (*initializer) (struct page *, enum vm_type, void *);
+		if (page == NULL)
+      		goto err;
 
 		switch (VM_TYPE(type))
         {
         case VM_ANON:
-            initializer = anon_initializer;
+			uninit_new(page, upage, init, type, aux, anon_initializer);
+            // initializer = anon_initializer;
 			// printf("vm alloc with initializer page type : VM_ANON : uninit_new \n");
             break;
         case VM_FILE:
-            initializer = file_backed_initializer;
+			uninit_new(page, upage, init, type, aux, file_backed_initializer);
+            // initializer = file_backed_initializer;
 			// printf("vm alloc with initializer page type : VM_FILE\n");
             break;
         }
-		uninit_new(page, upage, init, type, aux, initializer);
+		// uninit_new(page, upage, init, type, aux, initializer);
 		// printf("vm alloc with initializer uninit 성공\n");
 
 		page->writable = writable;
@@ -170,7 +174,49 @@ struct list_elem* start;
 static struct frame *
 vm_get_victim (void) {
 	struct frame *victim = NULL; /* victim = 교체 페이지 대상 */
-/* clock algorithm */
+
+	/* lru_algorithm */
+	// lock_acquire(&frame_table_lock);
+	// Least Recently Used
+	size_t lru_len = list_size(&frame_table); // 현재 프레임 테이블의 크기를 측정한다
+	struct list_elem *e = list_begin(&frame_table); // 리스트의 시작점을 가져온다
+	struct frame *tmp_frame;
+	struct list_elem *next_tmp;
+	for (size_t i = 0; i < lru_len; i++)
+	{
+		tmp_frame = list_entry(e, struct frame, frame_elem); // 현재 리스트 요소에서 프레임 구조체를 추출한다
+		// 현재 페이지가 최근에 접근되었는지 확인
+		if (pml4_is_accessed(thread_current()->pml4, tmp_frame->page->va))
+		{
+			// 페이지가 최근에 접근된 경우, 접근 플래그를 false로 설정하고, 해당 프레임을 리스트의 끝으로 이동시킨다
+			pml4_set_accessed(thread_current()->pml4, tmp_frame->page->va, false);
+			next_tmp = list_next(e);
+			list_remove(e); // 현재 요소를 리스트에서 제거
+			list_push_back(&frame_table, e); // 제거된 요소를 리스트의 끝에 다시 추가
+			e = next_tmp; // 다음 요소로 이동
+			continue;
+		}
+		// 교체 대상(victim)을 찾지 못했으면 현재 프레임을 교체 대상으로 설정
+		if (victim == NULL)
+		{
+			victim = tmp_frame;
+			next_tmp = list_next(e);
+			list_remove(e); // 교체 대상이 되는 프레임을 리스트에서 제거
+			e = next_tmp; // 다음 요소로 이동합
+			continue;
+		}
+		e = list_next(e); // 다음 요소로 이동
+	}
+	// 모든 프레임이 최근에 사용되었다면, 리스트의 첫 번째 프레임을 교체 대상으로 선택
+	if (victim == NULL)
+		victim = list_entry(list_pop_front(&frame_table), struct frame, frame_elem);
+
+	// 이 부분은 멀티 스레딩 환경에서 프레임 테이블에 대한 동시 접근을 관리하기 위해 사용될 수 있다.
+	// lock_acquire(&frame_table_lock);
+
+	return victim; // 교체 대상 프레임을 반환
+
+	/* clock algorithm */
 	 /* TODO: The policy for eviction is up to you. */
 	// struct thread *curr = thread_current();
 	// struct list_elem *e = start;
@@ -193,42 +239,8 @@ vm_get_victim (void) {
 	// 		return victim;
 	// }
 	// return victim;
-	
-	/* lru_algorithm */
-	// lock_acquire(&frame_table_lock);
-	size_t lru_len = list_size(&frame_table);
-	struct list_elem *e = list_begin(&frame_table);
-	struct frame *tmp_frame;
-	struct list_elem *next_tmp;
-	for (size_t i = 0; i < lru_len; i++)
-	{
-		tmp_frame = list_entry(e, struct frame, frame_elem);
-		if (pml4_is_accessed(thread_current()->pml4, tmp_frame->page->va))
-		{
-			pml4_set_accessed(thread_current()->pml4, tmp_frame->page->va, false);
-			next_tmp = list_next(e);
-			list_remove(e);
-			list_push_back(&frame_table, e);
-			e = next_tmp;
-			continue;
-		}
-		if (victim == NULL)
-		{
-			victim = tmp_frame;
-			next_tmp = list_next(e);
-			list_remove(e);
-			e = next_tmp;
-			continue;
-		}
-		e = list_next(e);
-	}
-	if (victim == NULL)
-		victim = list_entry(list_pop_front(&frame_table), struct frame, frame_elem);
-	
-	// lock_acquire(&frame_table_lock);
 
-	return victim;
-}
+	}
 
 /* Evict one page and return the corresponding frame.
  * Return NULL on error.*/

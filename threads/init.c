@@ -69,7 +69,7 @@ int
 main (void) {
 	uint64_t mem_end;
 	char **argv;
-
+	// printf("init.c start!!");
 	/* Clear BSS and get machine's RAM size. */
 	bss_init ();
 
