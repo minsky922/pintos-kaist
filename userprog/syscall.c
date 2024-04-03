@@ -54,6 +54,8 @@ syscall_init (void) {
 // 		exit(-1);
 // 	}
 // }
+
+
 bool check_addr(char* addr){
 	if(!addr || !is_user_vaddr(addr))
 		return false;
@@ -131,13 +133,9 @@ void *mmap (void *addr, size_t length, int writable, int fd, off_t offset){
 	// struct file *file = find_file_by_fd(fd);
 	// if (file == NULL | file_length(file) == NULL | (int)length == NULL)
 
-	if(is_kernel_vaddr(addr) || addr == KERN_BASE - PGSIZE){
-		return NULL;
-	}
+	// if(is_kernel_vaddr(addr) || addr == KERN_BASE - PGSIZE){
 	// 	return NULL;
-
-	if (!is_user_vaddr(addr) || !is_user_vaddr(addr + length))
-		return NULL;
+	// }
 
 	if (spt_find_page(&thread_current()->spt, addr))
 		return NULL;
@@ -362,13 +360,16 @@ int read (int fd, void *buffer, unsigned length){
 			exit(-1);
 	// printf("syscall_read fd: %d, buffer: %p, length: %d\n", fd, buffer, length);
 	struct page *page = spt_find_page(&thread_current()->spt, buffer);
-	// printf("syscall_read page: %p\n", page);
+	// printf("[syscall_read] page 1: %p\n", page);
+	// printf("[syscall_read] page type: %d\n", page->operations->type);
 	// if (page == NULL){
 	// 	exit(-1);
 	// }
+
 	if (page && !page->writable){
 			exit(-1);
 		}
+	// printf("[syscall_read] page 2: %p\n", page);
 	char *ptr = (char *)buffer;
 	int bytes_read = 0;
 
@@ -377,12 +378,13 @@ int read (int fd, void *buffer, unsigned length){
 			char ch = input_getc();
 			if (ch == '\n'){
 				break;
+			}
 			*ptr = ch;
             ptr++;
 			bytes_read++;
 			}
 		}
-	}
+	// }
 	else{
 		if (fd < 2)
 				return -1;
@@ -390,10 +392,11 @@ int read (int fd, void *buffer, unsigned length){
 		if (file == NULL){
 			return -1;
 		}
-		// printf("syscall_read file_read start\n");
+		// printf("[syscall_read] file_read start\n");
 		lock_acquire(&filesys_lock);
 		bytes_read = file_read(file,buffer,length);
 		lock_release(&filesys_lock);
+		// printf("[syscall_read] file_read end - bytes_read : %d\n",bytes_read);
 }
 	return bytes_read;
 }

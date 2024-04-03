@@ -6,7 +6,7 @@
 #include "threads/mmu.h"
 #include "userprog/syscall.h"
 
-static struct lock file_backed_lock;
+// static struct lock file_backed_lock;
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
 static void file_backed_destroy (struct page *page);
@@ -23,7 +23,7 @@ static const struct page_operations file_ops = {
 /* 파일 지원 페이지 하위 시스템을 초기화합니다. 이 기능에서는 파일 백업 페이지와 관련된 모든 것을 설정할 수 있습니다. */
 void
 vm_file_init (void) {
-	lock_init(&file_backed_lock);
+	// lock_init(&file_backed_lock);
 }
 
 // struct file *file;
@@ -63,9 +63,9 @@ file_backed_swap_in(struct page *page, void *kva)
     // printf("file_backed_swap_in\n");
     struct file_page *file_page = &page->file;
 
-    lock_acquire(&file_backed_lock);
+    lock_acquire(&filesys_lock);
     off_t size = file_read_at(file_page->file, kva, (off_t)file_page->read_bytes, file_page->offset);
-    lock_release(&file_backed_lock);
+    lock_release(&filesys_lock);
 
 	// printf("file_bakce_swap_in_ing\n");
 
@@ -88,9 +88,9 @@ file_backed_swap_out(struct page *page)
 	struct file_page *file_page UNUSED = &page->file;
 	if (pml4_is_dirty(thread_current()->pml4, page->va))
 	{	
-		lock_acquire(&file_backed_lock);
+		lock_acquire(&filesys_lock);
 		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
-		lock_release(&file_backed_lock);
+		lock_release(&filesys_lock);
 		pml4_set_dirty(thread_current()->pml4, page->va, false);
 	}
 
@@ -110,15 +110,7 @@ static void
 file_backed_destroy(struct page *page)
 {
    struct file_page *file_page = &page->file;
-	if (pml4_is_dirty(thread_current()->pml4, page->va))
-	{
-		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
-		pml4_set_dirty(thread_current()->pml4, page->va, 0);
-	}
-	pml4_clear_page(thread_current()->pml4, page->va);
-
-	// struct file_page *file_page = &page->file;
-    // // list_remove(&(file_page->file_elem));
+		// printf("file_backed_destroy\n");
     // if (page->frame != NULL)
     // {
     //     lock_acquire(&frame_table_lock);
@@ -126,6 +118,16 @@ file_backed_destroy(struct page *page)
     //     lock_release(&frame_table_lock);
     //     free(page->frame);
     // }
+	if (pml4_is_dirty(thread_current()->pml4, page->va))
+	{	
+		lock_acquire(&filesys_lock);
+		file_write_at(file_page->file, page->va, file_page->read_bytes, file_page->offset);
+		lock_release(&filesys_lock);
+		pml4_set_dirty(thread_current()->pml4, page->va, 0);
+	}
+	pml4_clear_page(thread_current()->pml4, page->va);
+
+    // // list_remove(&(file_page->file_elem));
 }
 
 /* Do the mmap */
@@ -135,7 +137,7 @@ do_mmap (void *addr, size_t length, int writable,
 
 	bool succ = false;
 
-	void *original_addr = addr; // 매핑 성공 시 파일이 매핑된 가상 주소 반환하는 데 사용
+	void *advance_addr = addr; 
 	struct file *f = file_reopen(file);
 	// printf("do mmap \n");
 	// printf("do mmap addr : %p\n", addr);
@@ -171,7 +173,7 @@ do_mmap (void *addr, size_t length, int writable,
 		// }
 		// printf("lazy_load_info->offset : %d\n", lazy_load_info->offset);
 		// printf("lazy_load_info->read_bytes : %d\n", lazy_load_info->read_bytes);
-		if (!vm_alloc_page_with_initializer(VM_FILE, original_addr,
+		if (!vm_alloc_page_with_initializer(VM_FILE, advance_addr,
 											writable, lazy_load_segment, lazy_load_info)){
 			file_close(f);
 			free(lazy_load_info);
@@ -184,7 +186,7 @@ do_mmap (void *addr, size_t length, int writable,
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
-		original_addr += PGSIZE;
+		advance_addr += PGSIZE;
 		offset += page_read_bytes;
 		// printf("advance offset : %d\n",offset);
 		// printf("advance readbytes : %d\n",read_bytes);
@@ -202,7 +204,7 @@ do_mmap (void *addr, size_t length, int writable,
 		// printf("do mmap success!\n");
 		// printf("do mmap final addr : %p\n", addr);
 		// printf("do mmap original addr: %p\n", original_addr);
-		return addr; // original이아닌 addr일때 pass
+		return addr; // 원래 addr일때 pass
 	}
 	else{
 		return NULL;

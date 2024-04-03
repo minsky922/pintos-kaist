@@ -175,7 +175,7 @@ vm_get_victim (void) {
 	// struct thread *curr = thread_current();
 	// struct list_elem *e = start;
 
-	// printf("vm_get_vicitm start\n");
+	// // printf("vm_get_vicitm start\n");
 
 	// for (start = e; start != list_end(&frame_table); start = list_next(start)) {
 	// 	victim = list_entry(start, struct frame, frame_elem);
@@ -404,6 +404,8 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 				file_aux->offset = src_page->file.offset;
 				file_aux->read_bytes = src_page->file.read_bytes;
 				file_aux->zero_bytes = src_page->file.zero_bytes;
+				file_aux->writable = src_page->file.writable;
+				// printf("[DEBUG fork-read] file_aux->writable: %d, src_page->writable: %d\n",file_aux->writable, writable);
 
 				if (!vm_alloc_page_with_initializer(type, upage, writable, NULL, file_aux))
 					return false;
@@ -417,14 +419,17 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
         		}
 
 				/* type이 uninit이 아니면*/
-				
-				if (!vm_alloc_page(type, upage, writable))
-					return false;
-				if (!vm_claim_page(upage))
-					return false;
-				// hash_insert(&dst->spt_hash, &page->hash_elem);
+				if (!vm_alloc_page(type, upage, writable)){
+				// printf("[supplemental_page_table_copy] type : anon\n");
+					return false;}
+				if (!vm_claim_page(upage)){
+				// printf("[supplemental_page_table_copy] type : anon\n");	
+					return false;}
+				// hash_insert(&dst->spt_hash, &src_page->hash_elem);
 				struct page *dst_page = spt_find_page(dst,upage);
+				// printf("[supplemental_page_table_copy] page : %p\n",dst_page->frame->kva);
 				memcpy(dst_page->frame->kva, src_page->frame->kva, PGSIZE);
+				// printf("[supplemental_page_table_copy] dst_page : %p\n",memcpy(dst_page->frame->kva, src_page->frame->kva, PGSIZE));
 			}
 			return true;
 }
@@ -442,7 +447,7 @@ supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	 * TODO: writeback all the modified contents to the storage. */
 	// 해시 테이블을 재사용하려면 hash_clear를, 해시 테이블을 완전히 제거하려면 hash_destroy를
 	// hash_clear(&spt->spt_hash, clear_table);
-	// lock_acquire(&kill_lock);
+	lock_acquire(&kill_lock);
 	hash_clear(&spt->spt_hash, clear_table);
-	// lock_release(&kill_lock);
+	lock_release(&kill_lock);
 }

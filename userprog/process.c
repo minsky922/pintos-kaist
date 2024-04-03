@@ -96,10 +96,12 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 
 	struct thread *t = find_child(tid);
 
+	lock_acquire(&filesys_lock);
 	sema_down(&t->child_load_sema);
+	lock_release(&filesys_lock);
 
 	if (t->exit_status == -1){
-		//sema_up(&t->exit_sema);
+		// sema_up(&t->exit_sema);
 		return TID_ERROR;
 	}
 	return tid;
@@ -354,6 +356,7 @@ process_wait (tid_t child_tid UNUSED) {
 	//timer_sleep(10);
 	
 	return result;
+	// return t->exit_status;
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -784,15 +787,41 @@ lazy_load_segment (struct page *page, void *aux) {
    struct lazy_load_info *lazy_load_info = (struct lazy_load_info *)aux;
 	file_seek(lazy_load_info->file, lazy_load_info->offset);
 	if (file_read(lazy_load_info->file, page->frame->kva, lazy_load_info->read_bytes) != (int)(lazy_load_info->read_bytes))
-	{
+	{	
 		palloc_free_page(page->frame->kva);
 		return false;
 	}
+	// printf("lazy_load_segment : file_read success\n");
 	memset(page->frame->kva + lazy_load_info->read_bytes, 0, lazy_load_info->zero_bytes);
-	free(lazy_load_info);
+	// free(lazy_load_info);
 
 	return true;
 }
+// bool
+// lazy_load_segment(struct page *page, void *aux)
+// {
+//     /* TODO: Load the segment from the file */
+//     /* TODO: This called when the first page fault occurs on address VA. */
+//     /* TODO: VA is available when calling this function. */
+//     // bool success = true;
+//     struct lazy_load_info *info = (struct lazy_load_info *)aux;
+// 	file_seek(info->file, info->offset);
+//     if (file_read_at(info->file, page->frame->kva, info->read_bytes, info->offset) != (off_t)info->read_bytes)
+//     {
+//         // vm_dealloc_page(page);
+// 		palloc_free_page(page->frame->kva);
+//         return false;
+//     }
+//     // else
+//     // {
+// 		// printf("mmap-clean : lazy_load_segment\n");
+//         memset(page->frame->kva + info->read_bytes, 0, info->zero_bytes);
+//     // }
+// 	// file_close(info->file);
+//     free(info);
+//     // return success;
+// 	return true;
+// }
 
 /* Loads a segment starting at offset OFS in FILE at address
  * UPAGE.  In total, READ_BYTES + ZERO_BYTES bytes of virtual
@@ -849,6 +878,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		//void *aux = NULL;
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, lazy_load_info))
+			// free(&lazy_load_info);
 			return false;
 
 		/* Advance. */

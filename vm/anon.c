@@ -39,7 +39,8 @@ bool anon_initializer(struct page *page, enum vm_type type, void *kva)
     page->operations = &anon_ops;
 
     struct anon_page *anon_page = &page->anon;
-    anon_page->sec_no = SIZE_MAX;
+    // anon_page->sec_no = SIZE_MAX;
+    anon_page->sec_no = -1;
     anon_page->thread = thread_current();
 
     return true;
@@ -52,7 +53,8 @@ anon_swap_in(struct page *page, void *kva)
     // printf("anon_swap_in\n");
     struct anon_page *anon_page = &page->anon;
 
-    if (anon_page->sec_no == SIZE_MAX)
+    // if (anon_page->sec_no == SIZE_MAX)
+    if (anon_page->sec_no == -1)
         return false;
 
     lock_acquire(&bitmap_lock);
@@ -88,12 +90,12 @@ anon_swap_out(struct page *page)
     if (sec_no == BITMAP_ERROR)
         return false;
 
-    anon_page->sec_no = sec_no;
 
     for (int i = 0; i < 8; i++)
     {
         disk_write(swap_disk, sec_no + i, page->frame->kva + i * DISK_SECTOR_SIZE);
     }
+    anon_page->sec_no = sec_no;
 
     pml4_clear_page(anon_page->thread->pml4, page->va);
     pml4_set_dirty(anon_page->thread->pml4, page->va, false);
@@ -121,7 +123,12 @@ anon_destroy(struct page *page)
 
         // pte write bit 1 -> free
         free(page->frame);
+        // printf("anon_destory: list: %p\n",&page->frame);
     }
-    if (anon_page->sec_no != SIZE_MAX)
+    // if (anon_page->sec_no != SIZE_MAX){
+        if (anon_page->sec_no != -1){
+    // printf("anon_destroy: anon_page->sec_no: %d\n",anon_page->sec_no);
         bitmap_set_multiple(disk_bitmap, anon_page->sec_no, 8, false);
+        // printf("annon_destory : bitmap_set_multiple done\n");
+    }
 }
